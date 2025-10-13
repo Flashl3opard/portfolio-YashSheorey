@@ -10,7 +10,6 @@ import Skills from "./components/Skills";
 import Projects from "./components/Projects";
 import Experience from "./components/Experience";
 import Contact from "./components/Contact";
-import Footer from "./components/Footer";
 
 export default function Home() {
   // Smooth scroll for all internal links
@@ -50,7 +49,6 @@ export default function Home() {
         <Contact />
 
         {/* ===== FOOTER ===== */}
-        <Footer />
       </motion.main>
     </AnimatePresence>
   );
