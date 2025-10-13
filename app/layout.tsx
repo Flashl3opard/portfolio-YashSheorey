@@ -1,16 +1,21 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+// 1. IMPORT ALDRICH AND REMOVE GEIST
+import { Aldrich, Space_Mono } from "next/font/google";
 import "./globals.css";
 import { FaCode, FaBrain, FaSatellite } from "react-icons/fa";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Aldrich (for headings / main text)
+const aldrich = Aldrich({
+  variable: "--font-aldrich",
   subsets: ["latin"],
+  weight: ["400"], // Aldrich only comes in a single weight (400)
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+// Space Mono (for code / futuristic accent text)
+const spaceMono = Space_Mono({
+  variable: "--font-space-mono",
   subsets: ["latin"],
+  weight: ["400", "700"],
 });
 
 export const metadata: Metadata = {
@@ -24,7 +29,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased relative min-h-screen overflow-x-hidden text-white bg-gradient-to-br from-[#050510] via-[#0b0f25] to-[#09172e]`}
+        // 3. UPDATE CLASSNAME TO USE ALDRICH
+        className={`${aldrich.variable} ${spaceMono.variable} antialiased relative min-h-screen overflow-x-hidden text-white bg-gradient-to-br from-[#050510] via-[#0b0f25] to-[#09172e]`}
       >
         {/* ===== Floating Gradient Glows ===== */}
         <div className="absolute inset-0 overflow-hidden z-0 pointer-events-none">
@@ -41,7 +47,6 @@ export default function RootLayout({
 
         {/* ===== Page Content ===== */}
         <div className="relative z-10">
-          {/* Add global hover glow effects via wrapper */}
           <div className="group">{children}</div>
         </div>
       </body>

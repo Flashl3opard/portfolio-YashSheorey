@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { motion } from "framer-motion";
+import { FaDownload } from "react-icons/fa"; // Import the download icon
 
 // Expertise data
 const expertise = [
@@ -72,7 +73,7 @@ const About = () => {
         transition={{ delay: 0.3, duration: 0.8 }}
       >
         {/* Bio Summary */}
-        <div className="text-gray-200 text-lg md:text-xl leading-relaxed mb-12 text-center">
+        <div className="text-gray-200 text-lg md:text-xl leading-relaxed mb-8 text-center">
           <p className="mb-4">
             I’m <span className="text-cyan-400 font-bold">Yash Sheorey</span>, a
             passionate creator at the intersection of{" "}
@@ -89,6 +90,25 @@ const About = () => {
             solutions, from animations to robust backend integrations.
           </p>
         </div>
+
+        {/* --- DOWNLOAD RESUME BUTTON --- */}
+        <motion.div
+          className="flex justify-center mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.5 }}
+          transition={{ delay: 0.6, duration: 0.8 }}
+        >
+          <a
+            href="/path/to/your/resume.pdf" // **CRITICAL: Replace with the actual path to your resume file**
+            download
+            className="group flex items-center gap-3 px-8 py-3 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-bold uppercase text-sm tracking-wider hover:scale-[1.05] transition-all duration-300 shadow-[0_0_20px_rgba(255,0,255,0.4)] hover:shadow-[0_0_30px_rgba(255,0,255,0.7)]"
+          >
+            <FaDownload className="text-lg group-hover:animate-pulse" />
+            Download Resume (PDF)
+          </a>
+        </motion.div>
+        {/* --- END DOWNLOAD RESUME BUTTON --- */}
 
         {/* Core Expertise */}
         <h3 className="text-3xl font-bold text-center mb-8 bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 to-fuchsia-300">
