@@ -1,6 +1,7 @@
 "use client";
 import { motion, AnimatePresence } from "framer-motion";
 import React, { useState } from "react";
+import { useTheme } from "./ThemeContext"; // 👈 Import useTheme
 
 // Interface for Project data
 interface Project {
@@ -13,6 +14,7 @@ interface Project {
 
 // Projects array
 const projects: Project[] = [
+  // ... (Your projects array remains unchanged)
   {
     name: "OjasAI Platform",
     desc: "AI-powered platform for content generation and image manipulation. Built with Next.js, OpenAI API, and Vercel hosting.",
@@ -57,35 +59,62 @@ const projects: Project[] = [
   },
 ];
 
-// Mappings for dynamic Tailwind classes
-const gradientMap = {
-  fuchsia: "from-fuchsia-500/70 to-fuchsia-900/50",
-  cyan: "from-cyan-500/70 to-cyan-900/50",
-  violet: "from-violet-500/70 to-violet-900/50",
-  teal: "from-teal-500/70 to-teal-900/50",
-};
-
-const textColorMap = {
-  fuchsia: "text-fuchsia-300",
-  cyan: "text-cyan-300",
-  violet: "text-violet-300",
-  teal: "text-teal-300",
-};
-
-const borderColorMap = {
-  fuchsia: "border-fuchsia-500/50",
-  cyan: "border-cyan-500/50",
-  violet: "border-violet-500/50",
-  teal: "border-teal-500/50",
+// 👇 Comprehensive map for dark and light mode classes (JIT-safe)
+const colorMap = {
+  fuchsia: {
+    gradient: "from-fuchsia-500/70 to-fuchsia-900/50",
+    text: "text-fuchsia-300",
+    border: "border-fuchsia-500/50",
+    tagBg: "bg-fuchsia-600/30",
+    lightGradient: "from-fuchsia-400 to-fuchsia-100",
+    lightText: "text-fuchsia-700",
+    lightBorder: "border-fuchsia-300",
+    lightTagBg: "bg-fuchsia-100",
+  },
+  cyan: {
+    gradient: "from-cyan-500/70 to-cyan-900/50",
+    text: "text-cyan-300",
+    border: "border-cyan-500/50",
+    tagBg: "bg-cyan-600/30",
+    lightGradient: "from-cyan-400 to-cyan-100",
+    lightText: "text-cyan-700",
+    lightBorder: "border-cyan-300",
+    lightTagBg: "bg-cyan-100",
+  },
+  violet: {
+    gradient: "from-violet-500/70 to-violet-900/50",
+    text: "text-violet-300",
+    border: "border-violet-500/50",
+    tagBg: "bg-violet-600/30",
+    lightGradient: "from-violet-400 to-violet-100",
+    lightText: "text-violet-700",
+    lightBorder: "border-violet-300",
+    lightTagBg: "bg-violet-100",
+  },
+  teal: {
+    gradient: "from-teal-500/70 to-teal-900/50",
+    text: "text-teal-300",
+    border: "border-teal-500/50",
+    tagBg: "bg-teal-600/30",
+    lightGradient: "from-teal-400 to-teal-100",
+    lightText: "text-teal-700",
+    lightBorder: "border-teal-300",
+    lightTagBg: "bg-teal-100",
+  },
 };
 
 // Placeholder Image Component
-const ImagePlaceholder: React.FC<{ color: Project["color"]; name: string }> = ({
-  color,
-  name,
-}) => (
+const ImagePlaceholder: React.FC<{
+  color: Project["color"];
+  name: string;
+  darkMode: boolean;
+}> = ({ color, name, darkMode }) => (
   <div
-    className={`w-full h-48 flex items-center justify-center font-extrabold text-2xl text-white/90 p-4 transition-all duration-500 rounded-t-2xl bg-gradient-to-br ${gradientMap[color]} shadow-inner`}
+    className={`w-full h-48 flex items-center justify-center font-extrabold text-2xl p-4 transition-all duration-500 rounded-t-2xl shadow-inner ${
+      darkMode
+        ? `${colorMap[color].gradient} text-white/90`
+        : `${colorMap[color].lightGradient} text-gray-800` // 👈 Dynamic placeholder
+    }`}
   >
     <span className="text-center italic opacity-70">
       {name.split(" ")[0]} Preview
@@ -94,6 +123,7 @@ const ImagePlaceholder: React.FC<{ color: Project["color"]; name: string }> = ({
 );
 
 // GitHub SVG Icon
+// ... (GitHubIcon component is unchanged)
 const GitHubIcon: React.FC = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -113,7 +143,7 @@ const GitHubIcon: React.FC = () => (
 
 const transition = { duration: 0.6, ease: [0.4, 0.0, 0.2, 1] };
 
-// Variants for slide animation
+// ... (slideVariants function is unchanged)
 const slideVariants = (direction: number, i: number) => ({
   enter: {
     x: direction > 0 ? 300 : -300,
@@ -122,11 +152,9 @@ const slideVariants = (direction: number, i: number) => ({
   center: {
     x: 0,
     opacity: 1,
-    // Add the continuous float animation here
     y: [0, i % 2 === 0 ? 8 : -8, 0],
     transition: {
       ...transition,
-      // Stagger the initial fade-in and set up the continuous y-float
       opacity: { delay: i * 0.1, duration: 0.5 },
       y: {
         duration: 4 + i * 0.5,
@@ -144,23 +172,20 @@ const slideVariants = (direction: number, i: number) => ({
 });
 
 const Projects: React.FC = () => {
+  const { darkMode } = useTheme(); // 👈 Use the theme context
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(1);
-  // itemsPerPage will determine the number of columns on large screens (lg:grid-cols-3)
   const itemsPerPage = 3;
 
+  // ... (Your pagination logic remains unchanged)
   const totalItems = projects.length;
-
   const paginate = (newDirection: number) => {
     setDirection(newDirection);
     const newIndex = index + newDirection * itemsPerPage;
-
     let finalIndex: number;
-
     if (newIndex < 0) {
       finalIndex = 0;
     } else if (newIndex + itemsPerPage > totalItems) {
-      // Logic for the last page: ensures we start at the correct position
       finalIndex =
         totalItems -
         (totalItems % itemsPerPage === 0
@@ -169,32 +194,26 @@ const Projects: React.FC = () => {
     } else {
       finalIndex = newIndex;
     }
-
     setIndex(finalIndex);
   };
-
   const prev = () => paginate(-1);
   const next = () => paginate(1);
-
-  // Projects currently visible on the page
   const visibleProjects = projects.slice(index, index + itemsPerPage);
-
-  // Determine if buttons should be disabled
   const isPrevDisabled = index === 0;
   const isNextDisabled = index + visibleProjects.length >= totalItems;
-
-  // Calculate total pages for display
   const totalPages = Math.ceil(totalItems / itemsPerPage);
   const currentPage = Math.ceil((index + 1) / itemsPerPage);
 
   return (
     <section
       id="projects"
-      className="relative w-full py-24 md:py-32 flex flex-col items-center px-4 md:px-6 z-10 overflow-hidden" // Added overflow-hidden to prevent horizontal scroll during transition
+      className={`relative w-full py-24 md:py-32 flex flex-col items-center px-4 md:px-6 z-10 overflow-hidden transition-colors duration-500 ${
+        darkMode ? "bg-[#050510]" : "bg-gray-50" // 👈 Dynamic background
+      }`}
     >
       {/* Header */}
       <motion.h2
-        className="text-4xl md:text-6xl font-extrabold text-center mb-16 bg-gradient-to-r from-cyan-400 via-fuchsia-500 to-violet-500 bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(0,255,255,0.3)]"
+        className="text-4xl md:text-6xl font-extrabold text-center mb-16 bg-gradient-to-r from-cyan-500 via-fuchsia-500 to-violet-500 bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(0,255,255,0.3)]" // 👈 Matched gradient
         initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.5 }}
@@ -207,7 +226,7 @@ const Projects: React.FC = () => {
       <div className="max-w-7xl w-full">
         <AnimatePresence initial={false} mode="wait">
           <motion.div
-            key={currentPage} // Key change forces AnimatePresence to see a new component and run the exit/enter animations
+            key={currentPage}
             className="w-full grid grid-cols-1 gap-12 lg:grid-cols-3"
           >
             {visibleProjects.map((p, i) => (
@@ -216,39 +235,60 @@ const Projects: React.FC = () => {
                 href={p.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                // Motion properties using variants
                 variants={slideVariants(direction, i)}
                 initial="enter"
                 animate="center"
                 exit="exit"
                 whileHover={{ y: -8 }}
-                className="group block bg-white/5 backdrop-blur-md rounded-2xl overflow-hidden relative border border-cyan-400/30 hover:border-fuchsia-400/50 shadow-lg hover:shadow-[0_0_30px_rgba(255,0,255,0.4)] transition-all duration-300 cursor-pointer"
+                className={`group block rounded-2xl overflow-hidden relative shadow-lg transition-all duration-300 cursor-pointer ${
+                  darkMode
+                    ? "bg-white/5 backdrop-blur-md border border-cyan-400/30 hover:border-fuchsia-400/50 hover:shadow-[0_0_30px_rgba(255,0,255,0.4)]"
+                    : "bg-white/70 backdrop-blur-sm border border-gray-300 hover:border-fuchsia-400/50 hover:shadow-fuchsia-400/30" // 👈 Dynamic card
+                }`}
               >
                 {/* Placeholder Image */}
-                <ImagePlaceholder color={p.color} name={p.name} />
+                <ImagePlaceholder
+                  color={p.color}
+                  name={p.name}
+                  darkMode={darkMode}
+                />
 
                 {/* Content */}
                 <div className="p-6 space-y-3">
-                  <h3 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 to-fuchsia-300">
+                  <h3
+                    className={`text-2xl font-bold bg-clip-text text-transparent ${
+                      darkMode
+                        ? "bg-gradient-to-r from-cyan-300 to-fuchsia-300"
+                        : "bg-gradient-to-r from-cyan-600 to-fuchsia-600" // 👈 Dynamic text
+                    }`}
+                  >
                     {p.name}
                   </h3>
-                  <p className="text-gray-300 text-sm h-10 overflow-hidden">
+                  <p
+                    className={`text-sm h-10 overflow-hidden ${
+                      darkMode ? "text-gray-300" : "text-gray-700" // 👈 Dynamic text
+                    }`}
+                  >
                     {p.desc}
                   </p>
 
                   {/* Tag */}
                   <span
-                    className={`inline-block mt-3 px-3 py-1 text-xs font-medium rounded-full bg-${
-                      p.color
-                    }-600/30 ${textColorMap[p.color]} border ${
-                      borderColorMap[p.color]
+                    className={`inline-block mt-3 px-3 py-1 text-xs font-medium rounded-full border ${
+                      darkMode
+                        ? `${colorMap[p.color].text} ${
+                            colorMap[p.color].border
+                          } ${colorMap[p.color].tagBg}`
+                        : `${colorMap[p.color].lightText} ${
+                            colorMap[p.color].lightBorder
+                          } ${colorMap[p.color].lightTagBg}` // 👈 Dynamic tag
                     }`}
                   >
                     {p.tag}
                   </span>
                 </div>
 
-                {/* GitHub Button on Hover (Opacity controlled by group-hover) */}
+                {/* GitHub Button on Hover */}
                 <div
                   className="absolute bottom-4 right-4 p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/60 rounded-full hover:bg-black/80 shadow-lg"
                   aria-label="View project on GitHub"
@@ -273,19 +313,33 @@ const Projects: React.FC = () => {
           <button
             onClick={prev}
             disabled={isPrevDisabled}
-            className={`flex items-center gap-2 px-6 py-3 rounded-full border-2 text-cyan-300 transition-all duration-300 shadow-md ${
+            className={`flex items-center gap-2 px-6 py-3 rounded-full border-2 transition-all duration-300 shadow-md ${
               isPrevDisabled
-                ? "border-gray-700 text-gray-700 cursor-not-allowed"
-                : "border-cyan-400 hover:bg-cyan-400/10 hover:shadow-cyan-400/40"
+                ? darkMode
+                  ? "border-gray-700 text-gray-700 cursor-not-allowed"
+                  : "border-gray-300 text-gray-400 cursor-not-allowed"
+                : darkMode
+                ? "border-cyan-400 text-cyan-300 hover:bg-cyan-400/10 hover:shadow-cyan-400/40"
+                : "border-cyan-500 text-cyan-600 hover:bg-cyan-500/10 hover:shadow-cyan-400/30" // 👈 Dynamic button
             }`}
             aria-label="Previous page"
           >
             Previous
           </button>
 
-          <div className="flex items-center text-lg font-mono text-gray-400 px-4">
-            <span className="text-cyan-400 font-semibold">{currentPage}</span> /{" "}
-            {totalPages}
+          <div
+            className={`flex items-center text-lg font-mono px-4 ${
+              darkMode ? "text-gray-400" : "text-gray-600" // 👈 Dynamic text
+            }`}
+          >
+            <span
+              className={`font-semibold ${
+                darkMode ? "text-cyan-400" : "text-cyan-600" // 👈 Dynamic text
+              }`}
+            >
+              {currentPage}
+            </span>{" "}
+            / {totalPages}
           </div>
 
           <button
@@ -294,7 +348,7 @@ const Projects: React.FC = () => {
             className={`flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-fuchsia-500 to-violet-500 text-white font-semibold transition-all duration-300 shadow-lg ${
               isNextDisabled
                 ? "opacity-50 cursor-not-allowed"
-                : "hover:shadow-fuchsia-500/40"
+                : "hover:shadow-fuchsia-500/40" // This style works for both modes
             }`}
             aria-label="Next page"
           >

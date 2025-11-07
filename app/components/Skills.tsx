@@ -16,6 +16,7 @@ import {
   SiGoland,
   SiExpress,
 } from "react-icons/si";
+import { useTheme } from "./ThemeContext"; // 👈 Import useTheme
 
 const techSections = [
   {
@@ -27,6 +28,8 @@ const techSections = [
       },
       {
         name: "TypeScript",
+        // This was SiNextdotjs, which is odd. I'll assume you meant a TS icon,
+        // but for now, I'll leave your original icon choice.
         icon: <SiNextdotjs className="text-blue-400 text-5xl" />,
       },
       { name: "Python", icon: <FaPython className="text-blue-500 text-5xl" /> },
@@ -72,13 +75,17 @@ const techSections = [
 ];
 
 const Skills = () => {
+  const { darkMode } = useTheme(); // 👈 Use the theme context
+
   return (
     <section
       id="skills"
-      className="min-h-screen w-full flex flex-col items-center justify-center px-6 py-24 z-10"
+      className={`min-h-screen w-full flex flex-col items-center justify-center px-6 py-24 z-10 transition-colors duration-500 ${
+        darkMode ? "bg-[#050510]" : "bg-gray-50" // 👈 Dynamic background
+      }`}
     >
       <motion.h2
-        className="text-4xl md:text-6xl font-extrabold mb-16 bg-gradient-to-r from-cyan-400 via-fuchsia-500 to-violet-500 bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(0,255,255,0.3)] text-center"
+        className="text-4xl md:text-6xl font-extrabold mb-16 bg-gradient-to-r from-cyan-500 via-fuchsia-500 to-violet-500 bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(0,255,255,0.3)] text-center" // 👈 Matched gradient
         initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.5 }}
@@ -98,21 +105,33 @@ const Skills = () => {
             viewport={{ once: true, amount: 0.3 }}
             transition={{ delay: sIndex * 0.2, duration: 0.6 }}
           >
-            <h3 className="text-2xl md:text-3xl font-semibold mb-6 text-center text-cyan-300">
+            <h3
+              className={`text-2xl md:text-3xl font-semibold mb-6 text-center ${
+                darkMode ? "text-cyan-300" : "text-cyan-600" // 👈 Dynamic text
+              }`}
+            >
               {section.title}
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-1 gap-6">
               {section.skills.map((skill, index) => (
                 <motion.div
                   key={index}
-                  className="flex flex-col items-center justify-center bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6 cursor-pointer shadow-lg hover:shadow-[0_0_30px_rgba(0,255,255,0.25)] hover:scale-105 transition-all duration-300"
+                  className={`flex flex-col items-center justify-center rounded-2xl p-6 cursor-pointer transition-all duration-300 ${
+                    darkMode
+                      ? "bg-white/5 backdrop-blur-md border border-white/10 shadow-lg hover:shadow-[0_0_30px_rgba(0,255,255,0.25)]"
+                      : "bg-white/70 backdrop-blur-sm border border-gray-300 shadow-lg hover:shadow-cyan-400/30" // 👈 Dynamic card
+                  }`}
                   whileHover={{ scale: 1.05 }}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
                 >
                   {skill.icon}
-                  <span className="mt-3 text-white font-medium text-sm md:text-base text-center">
+                  <span
+                    className={`mt-3 font-medium text-sm md:text-base text-center ${
+                      darkMode ? "text-white" : "text-gray-900" // 👈 Dynamic text
+                    }`}
+                  >
                     {skill.name}
                   </span>
                 </motion.div>
