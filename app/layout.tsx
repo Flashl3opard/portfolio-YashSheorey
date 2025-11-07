@@ -1,17 +1,16 @@
 import type { Metadata } from "next";
-// 1. IMPORT ALDRICH AND REMOVE GEIST
 import { Aldrich, Space_Mono } from "next/font/google";
 import "./globals.css";
-import { FaCode, FaBrain, FaSatellite } from "react-icons/fa";
+// Removed FaCode, FaBrain, etc. - They don't belong here.
+import ClientWrapper from "./components/ClientWrapper"; // Assuming ClientWrapper is in components
 
-// Aldrich (for headings / main text)
+// ===== Fonts =====
 const aldrich = Aldrich({
   variable: "--font-aldrich",
   subsets: ["latin"],
-  weight: ["400"], // Aldrich only comes in a single weight (400)
+  weight: ["400"],
 });
 
-// Space Mono (for code / futuristic accent text)
 const spaceMono = Space_Mono({
   variable: "--font-space-mono",
   subsets: ["latin"],
@@ -27,28 +26,23 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
-        // 3. UPDATE CLASSNAME TO USE ALDRICH
-        className={`${aldrich.variable} ${spaceMono.variable} antialiased relative min-h-screen overflow-x-hidden text-white bg-gradient-to-br from-[#050510] via-[#0b0f25] to-[#09172e]`}
+        className={`${aldrich.variable} ${spaceMono.variable} antialiased relative min-h-screen overflow-x-hidden transition-all duration-500
+        
+          // --- FIXED ---
+          // DEFAULT (Light Mode) STYLES
+          bg-gradient-to-br from-[#f5f5ff] via-[#e8f0ff] to-[#dfe9ff] text-gray-900
+          
+          // DARK STYLES (with 'dark:' prefix)
+          dark:bg-gradient-to-br dark:from-[#050510] dark:via-[#0b0f25] dark:to-[#09172e] dark:text-white
+        `}
       >
-        {/* ===== Floating Gradient Glows ===== */}
-        <div className="absolute inset-0 overflow-hidden z-0 pointer-events-none">
-          <div className="absolute -top-20 left-1/4 w-72 h-72 bg-cyan-500/30 rounded-full blur-[120px] animate-pulse-slow"></div>
-          <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-fuchsia-500/30 rounded-full blur-[150px] animate-pulse-delay"></div>
-        </div>
+        <ClientWrapper>{children}</ClientWrapper>
 
-        {/* ===== Floating Icons ===== */}
-        <div className="absolute inset-0 flex justify-center items-center pointer-events-none z-0">
-          <FaCode className="absolute left-20 top-40 text-cyan-400/40 text-5xl animate-float" />
-          <FaBrain className="absolute right-28 top-32 text-fuchsia-400/40 text-4xl animate-float-slow" />
-          <FaSatellite className="absolute right-1/3 bottom-20 text-violet-400/40 text-5xl animate-float" />
-        </div>
-
-        {/* ===== Page Content ===== */}
-        <div className="relative z-10">
-          <div className="group">{children}</div>
-        </div>
+        {/* DELETED the global Gradient Glows and Floating Icons.
+          They belong in your MVPsection, not floating over your entire site.
+        */}
       </body>
     </html>
   );

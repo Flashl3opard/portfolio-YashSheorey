@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+// AnimatePresence and motion are GONE (moved to ClientWrapper)
+// Navbar is GONE (moved to ClientWrapper)
 
-import Navbar from "./components/Navbar";
 import MVPsection from "./components/MVPsection";
 import About from "./components/About";
 import Skills from "./components/Skills";
@@ -20,36 +20,36 @@ export default function Home() {
   }, []);
 
   return (
-    <AnimatePresence mode="wait">
-      <motion.main
-        className="relative flex flex-col items-center w-full overflow-x-hidden bg-gradient-to-br from-[#050510] via-[#0b0f25] to-[#09172e] text-white"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.8, ease: "easeInOut" }}
-      >
-        <Navbar />
+    // The AnimatePresence/motion wrapper is GONE
+    <main
+      // This 'main' tag matches the layout's light/dark mode.
+      // We apply the same logic here to ensure the *page* itself
+      // also has the base colors, preventing any layout flashes.
+      className="relative flex flex-col items-center w-full overflow-x-hidden 
+        bg-gradient-to-br from-[#f5f5ff] via-[#e8f0ff] to-[#dfe9ff] text-gray-900
+        dark:bg-gradient-to-br dark:from-[#050510] dark:via-[#0b0f25] dark:to-[#09172e] dark:text-white"
+    >
+      {/* Navbar is GONE */}
 
-        {/* ===== HERO / MVP ===== */}
-        <MVPsection />
+      {/* ===== HERO / MVP ===== */}
+      <MVPsection />
 
-        {/* ===== ABOUT ===== */}
-        <About />
+      {/* ===== ABOUT ===== */}
+      <About />
 
-        {/* ===== SKILLS ===== */}
-        <Skills />
+      {/* ===== SKILLS ===== */}
+      <Skills />
 
-        {/* ===== PROJECTS ===== */}
-        <Projects />
+      {/* ===== PROJECTS ===== */}
+      <Projects />
 
-        {/* ===== EXPERIENCE ===== */}
-        <Experience />
+      {/* ===== EXPERIENCE ===== */}
+      <Experience />
 
-        {/* ===== CONTACT ===== */}
-        <Contact />
+      {/* ===== CONTACT ===== */}
+      <Contact />
 
-        {/* ===== FOOTER ===== */}
-      </motion.main>
-    </AnimatePresence>
+      {/* ===== FOOTER ===== */}
+    </main>
   );
 }
