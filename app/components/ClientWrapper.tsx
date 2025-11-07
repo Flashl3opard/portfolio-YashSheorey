@@ -1,6 +1,6 @@
 "use client";
 
-import { ThemeProvider } from "./ThemeContext"; // Adjust path if needed
+import { ThemeProvider } from "./ThemeContext";
 import ThemeToggle from "./ThemeToggle";
 import Navbar from "./Navbar";
 import { AnimatePresence, motion } from "framer-motion";

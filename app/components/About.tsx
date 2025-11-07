@@ -1,7 +1,8 @@
 "use client";
 import React from "react";
 import { motion } from "framer-motion";
-import { FaDownload } from "react-icons/fa"; // Import the download icon
+import { FaDownload } from "react-icons/fa";
+import { useTheme } from "./ThemeContext";
 
 // Expertise data
 const expertise = [
@@ -31,8 +32,33 @@ const expertise = [
   },
 ];
 
-// Helper component to render an icon using inline SVG
-const CustomIcon = ({ path, color }: { path: string; color: string }) => (
+// Color map for proper Tailwind classes
+const colorMap = {
+  cyan: {
+    text: "text-cyan-500",
+    border: "border-cyan-500/30",
+    shadow: "hover:shadow-cyan-400/40",
+  },
+  fuchsia: {
+    text: "text-fuchsia-500",
+    border: "border-fuchsia-500/30",
+    shadow: "hover:shadow-fuchsia-400/40",
+  },
+  violet: {
+    text: "text-violet-500",
+    border: "border-violet-500/30",
+    shadow: "hover:shadow-violet-400/40",
+  },
+};
+
+// Inline SVG renderer
+const CustomIcon = ({
+  path,
+  color,
+}: {
+  path: string;
+  color: keyof typeof colorMap;
+}) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 24 24"
@@ -41,21 +67,25 @@ const CustomIcon = ({ path, color }: { path: string; color: string }) => (
     strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"
-    className={`w-10 h-10 md:w-12 md:h-12 text-${color}-400 drop-shadow-[0_0_15px_rgba(0,255,255,0.3)]`}
+    className={`w-10 h-10 md:w-12 md:h-12 ${colorMap[color].text} drop-shadow-[0_0_12px_rgba(0,255,255,0.25)]`}
   >
     <path d={path} />
   </svg>
 );
 
 const About = () => {
+  const { darkMode } = useTheme();
+
   return (
     <section
       id="about"
-      className="relative w-full py-24 md:py-32 flex flex-col items-center px-4 md:px-6 z-10"
+      className={`relative w-full py-24 md:py-32 flex flex-col items-center px-4 md:px-6 z-10 transition-colors duration-500 ${
+        darkMode ? "bg-[#050510]" : "bg-gray-50"
+      }`}
     >
       {/* 🌟 Header */}
       <motion.h2
-        className="text-4xl md:text-6xl font-extrabold mb-12 bg-gradient-to-r from-cyan-400 via-fuchsia-500 to-violet-500 bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(0,255,255,0.3)] text-center"
+        className="text-4xl md:text-6xl font-extrabold mb-12 bg-gradient-to-r from-cyan-500 via-fuchsia-500 to-violet-500 bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(0,255,255,0.3)] text-center"
         initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.5 }}
@@ -66,19 +96,39 @@ const About = () => {
 
       {/* 🌌 Main Glass Card */}
       <motion.div
-        className="relative z-10 max-w-5xl bg-white/5 backdrop-blur-xl border border-white/20 rounded-3xl p-6 md:p-12 shadow-[0_0_40px_rgba(0,255,255,0.15)] hover:shadow-[0_0_60px_rgba(0,255,255,0.25)] transition-shadow duration-300"
+        className={`relative z-10 max-w-5xl backdrop-blur-xl rounded-3xl p-6 md:p-12 shadow-[0_0_30px_rgba(0,255,255,0.1)] hover:shadow-[0_0_50px_rgba(0,255,255,0.3)] transition-shadow duration-300 ${
+          darkMode
+            ? "bg-white/5 border border-white/20"
+            : "bg-white/70 border border-gray-300"
+        }`}
         initial={{ opacity: 0, scale: 0.95 }}
         whileInView={{ opacity: 1, scale: 1 }}
         viewport={{ once: true, amount: 0.3 }}
         transition={{ delay: 0.3, duration: 0.8 }}
       >
         {/* Bio Summary */}
-        <div className="text-gray-200 text-lg md:text-xl leading-relaxed mb-8 text-center">
+        <div
+          className={`text-lg md:text-xl leading-relaxed mb-8 text-center ${
+            darkMode ? "text-gray-200" : "text-gray-700"
+          }`}
+        >
           <p className="mb-4">
-            I’m <span className="text-cyan-400 font-bold">Yash Sheorey</span>, a
-            passionate creator at the intersection of{" "}
-            <span className="text-cyan-400">futuristic UI design</span> and{" "}
-            <span className="text-fuchsia-400">
+            I'm{" "}
+            <span
+              className={
+                darkMode ? "text-cyan-400 font-bold" : "text-cyan-600 font-bold"
+              }
+            >
+              Yash Sheorey
+            </span>
+            , a passionate creator at the intersection of{" "}
+            <span className={darkMode ? "text-cyan-400" : "text-cyan-600"}>
+              futuristic UI design
+            </span>{" "}
+            and{" "}
+            <span
+              className={darkMode ? "text-fuchsia-400" : "text-fuchsia-600"}
+            >
               high-performance software engineering
             </span>
             .
@@ -100,7 +150,7 @@ const About = () => {
           transition={{ delay: 0.6, duration: 0.8 }}
         >
           <a
-            href="/path/to/your/resume.pdf" // **CRITICAL: Replace with the actual path to your resume file**
+            href="/path/to/your/resume.pdf"
             download
             className="group flex items-center gap-3 px-8 py-3 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-bold uppercase text-sm tracking-wider hover:scale-[1.05] transition-all duration-300 shadow-[0_0_20px_rgba(255,0,255,0.4)] hover:shadow-[0_0_30px_rgba(255,0,255,0.7)]"
           >
@@ -111,7 +161,7 @@ const About = () => {
         {/* --- END DOWNLOAD RESUME BUTTON --- */}
 
         {/* Core Expertise */}
-        <h3 className="text-3xl font-bold text-center mb-8 bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 to-fuchsia-300">
+        <h3 className="text-3xl font-bold text-center mb-8 bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-fuchsia-400">
           Core Expertise
         </h3>
 
@@ -119,20 +169,27 @@ const About = () => {
           {expertise.map((item, index) => (
             <motion.div
               key={item.id}
-              className={`p-6 rounded-2xl bg-white/5 backdrop-blur-md border border-${item.color}-500/30 transition-all duration-500 cursor-pointer shadow-lg hover:shadow-[0_0_25px_rgba(0,255,255,0.4)] hover:scale-105`}
+              className={`p-6 rounded-2xl ${
+                colorMap[item.color as keyof typeof colorMap].border
+              } transition-all duration-500 cursor-pointer shadow-lg hover:shadow-[0_0_25px_rgba(0,255,255,0.4)] hover:scale-105 ${
+                darkMode
+                  ? "bg-white/5 text-gray-200"
+                  : "bg-gray-100/80 text-gray-800"
+              }`}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.5 }}
               transition={{ delay: 0.2 * index, duration: 0.6 }}
             >
               <div className="flex flex-col items-center">
-                <CustomIcon path={item.icon} color={item.color} />
-                <h4 className="mt-4 text-xl font-semibold text-white mb-2 text-center">
+                <CustomIcon
+                  path={item.icon}
+                  color={item.color as keyof typeof colorMap}
+                />
+                <h4 className="mt-4 text-xl font-semibold mb-2 text-center">
                   {item.title}
                 </h4>
-                <p className="text-sm text-gray-300 text-center">
-                  {item.description}
-                </p>
+                <p className="text-sm text-center">{item.description}</p>
               </div>
             </motion.div>
           ))}
