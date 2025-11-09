@@ -1,14 +1,16 @@
 "use client";
 import React from "react";
 import { motion } from "framer-motion";
+import { useTheme } from "./ThemeContext"; // ✅ Use theme context for dark/light support
 
-// Timeline Icon Props
+/* -------------------------------
+   Timeline Icon Component
+----------------------------------*/
 interface TimelineIconProps {
   path: string;
   color: "cyan" | "fuchsia" | "violet";
 }
 
-// Timeline Icon Component (using inline SVG)
 const TimelineIcon: React.FC<TimelineIconProps> = ({ path, color }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -25,13 +27,17 @@ const TimelineIcon: React.FC<TimelineIconProps> = ({ path, color }) => (
   </svg>
 );
 
-// Icon Paths
+/* -------------------------------
+   Icon Paths
+----------------------------------*/
 const branchPath =
   "M6 3v12M18 3v12M3 15a3 3 0 100 6 3 3 0 000-6zm12 0a3 3 0 100 6 3 3 0 000-6zm-6 0v6";
 const dotPath =
   "M12 2a10 10 0 100 20 10 10 0 000-20zM12 12m-1 0a1 1 0 102 0 1 1 0 10-2 0";
 
-// Experience Type
+/* -------------------------------
+   Experience Data
+----------------------------------*/
 interface ExperienceItem {
   role: string;
   company: string;
@@ -41,7 +47,6 @@ interface ExperienceItem {
   color: "cyan" | "fuchsia" | "violet";
 }
 
-// Experiences Array
 const experiences: ExperienceItem[] = [
   {
     role: "Freelance Full Stack Developer",
@@ -90,13 +95,22 @@ const experiences: ExperienceItem[] = [
   },
 ];
 
+/* -------------------------------
+   Main Experience Section
+----------------------------------*/
 const Experience: React.FC = () => {
+  const { darkMode } = useTheme(); // ✅ Global theme
+
   return (
     <section
       id="experience"
-      className="relative w-full py-24 md:py-32 flex flex-col items-center px-4 md:px-6 z-10"
+      className={`relative w-full py-24 md:py-32 flex flex-col items-center px-4 md:px-6 z-10 transition-all duration-700 ${
+        darkMode
+          ? "bg-gradient-to-br from-[#050510] via-[#0b0f25] to-[#09172e] text-white"
+          : "bg-gradient-to-br from-[#f5f5ff] via-[#e8f0ff] to-[#dfe9ff] text-gray-900"
+      }`}
     >
-      {/* Section Header */}
+      {/* === Section Header === */}
       <motion.h2
         className="text-4xl md:text-6xl font-extrabold text-center mb-16 bg-gradient-to-r from-cyan-400 via-fuchsia-500 to-violet-500 bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(0,255,255,0.3)]"
         initial={{ opacity: 0, y: 50 }}
@@ -108,12 +122,17 @@ const Experience: React.FC = () => {
       </motion.h2>
 
       <div className="max-w-5xl mx-auto relative">
-        {/* Vertical Timeline Line */}
+        {/* === Vertical Timeline Line === */}
         <div
-          className="absolute left-3 md:left-1/2 transform md:-translate-x-1/2 w-1 h-full bg-gradient-to-b from-cyan-400/50 via-fuchsia-400/50 to-violet-400/50 shadow-[0_0_15px_rgba(0,255,255,0.4)]"
+          className={`absolute left-3 md:left-1/2 transform md:-translate-x-1/2 w-1 h-full ${
+            darkMode
+              ? "bg-gradient-to-b from-cyan-400/50 via-fuchsia-400/50 to-violet-400/50"
+              : "bg-gradient-to-b from-cyan-300/60 via-fuchsia-300/60 to-violet-300/60"
+          } shadow-[0_0_15px_rgba(0,255,255,0.4)]`}
           aria-hidden="true"
         />
 
+        {/* === Experience Cards === */}
         {experiences.map((exp, i) => {
           const isLeft = i % 2 === 0;
 
@@ -130,18 +149,24 @@ const Experience: React.FC = () => {
             >
               {/* Timeline Node (Desktop Only) */}
               <div
-                className={`absolute hidden md:flex top-6 left-1/2 transform -translate-x-1/2 z-10 items-center justify-center p-3 rounded-full border-4 border-gray-950 bg-white/10 backdrop-blur-sm shadow-xl shadow-${exp.color}-400/40`}
+                className={`absolute hidden md:flex top-6 left-1/2 transform -translate-x-1/2 z-10 items-center justify-center p-3 rounded-full border-4 ${
+                  darkMode
+                    ? "border-gray-800 bg-white/10"
+                    : "border-white bg-gray-100/40"
+                } backdrop-blur-sm shadow-xl shadow-${exp.color}-400/40`}
               >
                 <TimelineIcon path={exp.iconPath} color={exp.color} />
               </div>
 
-              {/* Experience Card */}
+              {/* === Experience Card === */}
               <div
                 className={`relative w-full md:w-5/12 p-6 rounded-2xl border border-${
                   exp.color
-                }-400/30 bg-white/5 backdrop-blur-md shadow-lg shadow-${
-                  exp.color
-                }-400/20 transition-all duration-500 hover:shadow-2xl hover:shadow-${
+                }-400/30 ${
+                  darkMode
+                    ? `bg-white/5 text-gray-200 shadow-${exp.color}-400/20`
+                    : `bg-white/60 text-gray-800 shadow-${exp.color}-300/30`
+                } backdrop-blur-md shadow-lg transition-all duration-500 hover:shadow-2xl hover:shadow-${
                   exp.color
                 }-400/40 ${isLeft ? "md:mr-auto" : "md:ml-auto"}`}
               >
@@ -151,13 +176,31 @@ const Experience: React.FC = () => {
                 </div>
 
                 <h3
-                  className={`text-xl md:text-2xl font-bold text-${exp.color}-300`}
+                  className={`text-xl md:text-2xl font-bold text-${exp.color}-400`}
                 >
                   {exp.role}
                 </h3>
-                <p className="text-gray-300 font-medium mb-1">{exp.company}</p>
-                <p className="text-sm text-gray-400 mb-3">{exp.period}</p>
-                <p className="text-gray-400 text-base">{exp.details}</p>
+                <p
+                  className={`font-medium mb-1 ${
+                    darkMode ? "text-gray-300" : "text-gray-700"
+                  }`}
+                >
+                  {exp.company}
+                </p>
+                <p
+                  className={`text-sm mb-3 ${
+                    darkMode ? "text-gray-400" : "text-gray-600"
+                  }`}
+                >
+                  {exp.period}
+                </p>
+                <p
+                  className={`text-base ${
+                    darkMode ? "text-gray-400" : "text-gray-700"
+                  }`}
+                >
+                  {exp.details}
+                </p>
               </div>
             </motion.div>
           );
