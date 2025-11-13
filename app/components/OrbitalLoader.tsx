@@ -2,140 +2,189 @@
 
 import React, { useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Stars } from "@react-three/drei";
+import {
+  Stars,
+  MeshTransmissionMaterial,
+  Html,
+  Float,
+  Sphere,
+  Line,
+} from "@react-three/drei";
+import {
+  EffectComposer,
+  Bloom,
+  Noise,
+  Vignette,
+} from "@react-three/postprocessing";
 import * as THREE from "three";
 
-/**
- * Represents a single rotating ring segment.
- */
-const Ring = ({
-  color,
-  rotationSpeed,
-  initialRotation = 0,
-}: {
-  color: string;
-  rotationSpeed: number;
-  initialRotation?: number;
-}) => {
-  const ref = useRef<THREE.Mesh>(null!);
+/* ---------------------------------------------------
+   SMALL ORBITING PARTICLES
+--------------------------------------------------- */
+const OrbitParticles = () => {
+  const ref = useRef<THREE.Group>(null!);
 
-  // This hook runs on every frame
-  useFrame((state, delta) => {
-    if (ref.current) {
-      // Animate the rotation
-      ref.current.rotation.y += delta * rotationSpeed;
-    }
+  useFrame(({ clock }) => {
+    const t = clock.getElapsedTime();
+    ref.current.rotation.y = t * 0.4;
   });
 
   return (
-    <mesh
-      ref={ref}
-      rotation-x={Math.PI / 2} // Rotate to be flat like a ring
-      rotation-y={initialRotation}
-    >
-      {/* TorusGeometry args: 
-        1. radius: Radius of the torus
-        2. tube: Radius of the tube
-        3. radialSegments: Segments around the ring
-        4. tubularSegments: Segments of the tube
-        5. arc: The length of the arc (Math.PI * 1.5 is a 3/4 circle)
-      */}
-      <torusGeometry args={[2.5, 0.07, 16, 100, Math.PI * 1.5]} />
-      <meshStandardMaterial
-        color={color}
-        emissive={color} // Make it glow
-        emissiveIntensity={2}
-        toneMapped={false} // Ensure glow is visible
+    <group ref={ref}>
+      {Array.from({ length: 24 }).map((_, i) => {
+        const angle = (i / 24) * Math.PI * 2;
+
+        return (
+          <mesh
+            key={i}
+            position={[Math.cos(angle) * 2, Math.sin(angle) * 2, 0]}
+          >
+            <sphereGeometry args={[0.05, 16, 16]} />
+            <meshStandardMaterial
+              emissive="#00eaff"
+              emissiveIntensity={10}
+              toneMapped={false}
+            />
+          </mesh>
+        );
+      })}
+    </group>
+  );
+};
+
+/* ---------------------------------------------------
+   ENERGY WAVE PULSE
+--------------------------------------------------- */
+const EnergyPulse = () => {
+  const ref = useRef<THREE.Mesh>(null!);
+
+  useFrame(({ clock }) => {
+    const t = clock.getElapsedTime() % 1.5;
+    const scale = THREE.MathUtils.mapLinear(t, 0, 1.5, 1, 4);
+
+    ref.current.scale.set(scale, scale, scale);
+    ref.current.material.opacity = 1 - t / 1.5;
+  });
+
+  return (
+    <mesh ref={ref}>
+      <ringGeometry args={[1, 1.2, 64]} />
+      <meshBasicMaterial
+        color="#00eaff"
+        transparent
+        opacity={0.3}
         side={THREE.DoubleSide}
       />
     </mesh>
   );
 };
 
-/**
- * The main scene for the orbital loader.
- */
-const LoaderScene = () => {
-  const groupRef = useRef<THREE.Group>(null!);
+/* ---------------------------------------------------
+   RING COMPONENT
+--------------------------------------------------- */
+const Ring = ({ color, speed, radius }: any) => {
+  const ref = useRef<THREE.Mesh>(null!);
 
-  // Animate the entire group to give it a "presentation" spin
-  useFrame((state, delta) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y += delta * 0.2;
-      groupRef.current.rotation.x =
-        Math.sin(state.clock.elapsedTime * 0.5) * 0.2;
-    }
+  useFrame((_, delta) => {
+    ref.current.rotation.y += delta * speed;
+  });
+
+  return (
+    <mesh ref={ref} rotation-x={Math.PI / 2}>
+      <torusGeometry args={[radius, 0.06, 32, 200]} />
+      <meshStandardMaterial
+        color={color}
+        emissive={color}
+        emissiveIntensity={2.5}
+        metalness={0.6}
+        roughness={0.1}
+        toneMapped={false}
+      />
+    </mesh>
+  );
+};
+
+/* ---------------------------------------------------
+   MAIN SCENE
+--------------------------------------------------- */
+const LoaderScene = () => {
+  const group = useRef<THREE.Group>(null!);
+  const cameraTilt = useRef(0);
+
+  useFrame(({ camera, clock }) => {
+    const t = clock.getElapsedTime();
+
+    // Floating camera motion
+    camera.position.x = Math.sin(t * 0.3) * 0.4;
+    camera.position.y = Math.cos(t * 0.4) * 0.3;
+    camera.lookAt(0, 0, 0);
+
+    // Group float/rotation
+    group.current.rotation.y = t * 0.25;
+    group.current.rotation.x = Math.sin(t * 0.3) * 0.15;
   });
 
   return (
     <>
-      {/* Simple lighting */}
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[5, 5, 5]} intensity={1} />
+      <ambientLight intensity={0.1} />
+      <pointLight intensity={2} position={[0, 0, 4]} color="#00eaff" />
 
-      {/* Star field background */}
-      <Stars
-        radius={100}
-        depth={50}
-        count={5000}
-        factor={4}
-        saturation={0}
-        fade
-      />
+      {/* Starfield */}
+      <Stars radius={180} depth={70} count={10000} fade factor={4} />
 
-      <group ref={groupRef} dispose={null}>
-        {/* === Central Glowing Core === */}
-        <mesh>
-          <sphereGeometry args={[0.5, 32, 32]} />
-          <meshStandardMaterial
-            color="#f0f" // Fuchsia color
-            emissive="#f0f"
-            emissiveIntensity={5}
-            toneMapped={false}
-          />
-        </mesh>
+      <group ref={group}>
+        {/* CORE */}
+        <Float floatIntensity={0.7} speed={2}>
+          <Sphere args={[0.7, 64, 64]}>
+            <MeshTransmissionMaterial
+              thickness={1}
+              roughness={0}
+              transmission={1}
+              emissive="#00eaff"
+              emissiveIntensity={3}
+              iridescence={0.6}
+              chromaticAberration={0.01}
+            />
+          </Sphere>
+        </Float>
 
-        {/* === Orbital Ring 1 (Cyan) === */}
-        <Ring color="#0ff" rotationSpeed={0.5} initialRotation={Math.PI / 4} />
+        {/* Orbiting nano particles */}
+        <OrbitParticles />
 
-        {/* === Orbital Ring 2 (Fuchsia) === */}
-        <Ring
-          color="#f0f"
-          rotationSpeed={-0.3}
-          initialRotation={-Math.PI / 3}
-        />
+        {/* Energy pulse wave */}
+        <EnergyPulse />
 
-        {/* === Outer Static Ring (Subtle) === */}
-        <mesh rotation-x={Math.PI / 2}>
-          <torusGeometry args={[3.5, 0.01, 16, 100]} />
-          <meshStandardMaterial color="#555" />
-        </mesh>
+        {/* Rings */}
+        <Ring color="#00eaff" speed={0.4} radius={2.3} />
+        <Ring color="#ff00f7" speed={-0.25} radius={3} />
+        <Ring color="#0077ff" speed={0.15} radius={3.6} />
       </group>
+
+      {/* Post FX */}
+      <EffectComposer>
+        <Bloom intensity={1.5} luminanceThreshold={0.2} />
+        <Noise opacity={0.06} />
+        <Vignette darkness={0.8} offset={0.1} />
+      </EffectComposer>
     </>
   );
 };
 
-/**
- * The main Loader component that wraps the R3F Canvas.
- * This is what you will import into your page.
- */
-const OrbitalLoader: React.FC = () => {
+/* ---------------------------------------------------
+   UI LAYER
+--------------------------------------------------- */
+export default function OrbitalLoader() {
   return (
-    <div className="absolute inset-0 z-50 flex h-screen w-screen items-center justify-center bg-gradient-to-br from-[#050510] via-[#0b0f25] to-[#09172e]">
-      <Canvas camera={{ position: [0, 0, 7], fov: 60 }}>
-        {/* Use React Suspense to show a fallback while the 3D models load.
-          For this simple scene, it will be instant, but it's good practice.
-        */}
+    <div className="absolute inset-0 z-50 flex items-center justify-center bg-[#03040a]">
+      <Canvas camera={{ position: [0, 0, 7], fov: 55 }}>
         <React.Suspense fallback={null}>
           <LoaderScene />
         </React.Suspense>
       </Canvas>
-      {/* You can add a "Loading Portfolio..." text here if you want */}
-      <p className="absolute bottom-1/4 text-lg tracking-widest text-cyan-400/50 animate-pulse">
-        LOADING...
+
+      <p className="absolute bottom-[15%] text-cyan-300/60 tracking-[0.4em] text-sm md:text-xl animate-pulse">
+        LOADING PORTFOLIO...
       </p>
     </div>
   );
-};
-
-export default OrbitalLoader;
+}
