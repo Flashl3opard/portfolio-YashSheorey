@@ -1,14 +1,12 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, Suspense } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import {
   Stars,
   MeshTransmissionMaterial,
-  Html,
   Float,
   Sphere,
-  Line,
 } from "@react-three/drei";
 import {
   EffectComposer,
@@ -21,12 +19,15 @@ import * as THREE from "three";
 /* ---------------------------------------------------
    SMALL ORBITING PARTICLES
 --------------------------------------------------- */
-const OrbitParticles = () => {
-  const ref = useRef<THREE.Group>(null!);
+
+const OrbitParticles: React.FC = () => {
+  const ref = useRef<THREE.Group>(null);
 
   useFrame(({ clock }) => {
     const t = clock.getElapsedTime();
-    ref.current.rotation.y = t * 0.4;
+    if (ref.current) {
+      ref.current.rotation.y = t * 0.4;
+    }
   });
 
   return (
@@ -36,6 +37,7 @@ const OrbitParticles = () => {
 
         return (
           <mesh
+            // eslint-disable-next-line react/no-array-index-key
             key={i}
             position={[Math.cos(angle) * 2, Math.sin(angle) * 2, 0]}
           >
@@ -55,15 +57,20 @@ const OrbitParticles = () => {
 /* ---------------------------------------------------
    ENERGY WAVE PULSE
 --------------------------------------------------- */
-const EnergyPulse = () => {
-  const ref = useRef<THREE.Mesh>(null!);
+
+const EnergyPulse: React.FC = () => {
+  const ref = useRef<THREE.Mesh>(null);
 
   useFrame(({ clock }) => {
     const t = clock.getElapsedTime() % 1.5;
     const scale = THREE.MathUtils.mapLinear(t, 0, 1.5, 1, 4);
 
-    ref.current.scale.set(scale, scale, scale);
-    ref.current.material.opacity = 1 - t / 1.5;
+    if (ref.current) {
+      ref.current.scale.set(scale, scale, scale);
+
+      const mat = ref.current.material as THREE.MeshBasicMaterial;
+      mat.opacity = 1 - t / 1.5;
+    }
   });
 
   return (
@@ -80,13 +87,22 @@ const EnergyPulse = () => {
 };
 
 /* ---------------------------------------------------
-   RING COMPONENT
+   RING COMPONENT (Strongly Typed)
 --------------------------------------------------- */
-const Ring = ({ color, speed, radius }: any) => {
-  const ref = useRef<THREE.Mesh>(null!);
+
+interface RingProps {
+  color: string;
+  speed: number;
+  radius: number;
+}
+
+const Ring: React.FC<RingProps> = ({ color, speed, radius }) => {
+  const ref = useRef<THREE.Mesh>(null);
 
   useFrame((_, delta) => {
-    ref.current.rotation.y += delta * speed;
+    if (ref.current) {
+      ref.current.rotation.y += delta * speed;
+    }
   });
 
   return (
@@ -107,9 +123,9 @@ const Ring = ({ color, speed, radius }: any) => {
 /* ---------------------------------------------------
    MAIN SCENE
 --------------------------------------------------- */
-const LoaderScene = () => {
-  const group = useRef<THREE.Group>(null!);
-  const cameraTilt = useRef(0);
+
+const LoaderScene: React.FC = () => {
+  const group = useRef<THREE.Group>(null);
 
   useFrame(({ camera, clock }) => {
     const t = clock.getElapsedTime();
@@ -119,9 +135,11 @@ const LoaderScene = () => {
     camera.position.y = Math.cos(t * 0.4) * 0.3;
     camera.lookAt(0, 0, 0);
 
-    // Group float/rotation
-    group.current.rotation.y = t * 0.25;
-    group.current.rotation.x = Math.sin(t * 0.3) * 0.15;
+    // Group movement
+    if (group.current) {
+      group.current.rotation.y = t * 0.25;
+      group.current.rotation.x = Math.sin(t * 0.3) * 0.15;
+    }
   });
 
   return (
@@ -129,11 +147,10 @@ const LoaderScene = () => {
       <ambientLight intensity={0.1} />
       <pointLight intensity={2} position={[0, 0, 4]} color="#00eaff" />
 
-      {/* Starfield */}
       <Stars radius={180} depth={70} count={10000} fade factor={4} />
 
       <group ref={group}>
-        {/* CORE */}
+        {/* Core */}
         <Float floatIntensity={0.7} speed={2}>
           <Sphere args={[0.7, 64, 64]}>
             <MeshTransmissionMaterial
@@ -148,19 +165,14 @@ const LoaderScene = () => {
           </Sphere>
         </Float>
 
-        {/* Orbiting nano particles */}
         <OrbitParticles />
-
-        {/* Energy pulse wave */}
         <EnergyPulse />
 
-        {/* Rings */}
         <Ring color="#00eaff" speed={0.4} radius={2.3} />
         <Ring color="#ff00f7" speed={-0.25} radius={3} />
         <Ring color="#0077ff" speed={0.15} radius={3.6} />
       </group>
 
-      {/* Post FX */}
       <EffectComposer>
         <Bloom intensity={1.5} luminanceThreshold={0.2} />
         <Noise opacity={0.06} />
@@ -173,13 +185,14 @@ const LoaderScene = () => {
 /* ---------------------------------------------------
    UI LAYER
 --------------------------------------------------- */
-export default function OrbitalLoader() {
+
+const OrbitalLoader: React.FC = () => {
   return (
     <div className="absolute inset-0 z-50 flex items-center justify-center bg-[#03040a]">
       <Canvas camera={{ position: [0, 0, 7], fov: 55 }}>
-        <React.Suspense fallback={null}>
+        <Suspense fallback={null}>
           <LoaderScene />
-        </React.Suspense>
+        </Suspense>
       </Canvas>
 
       <p className="absolute bottom-[15%] text-cyan-300/60 tracking-[0.4em] text-sm md:text-xl animate-pulse">
@@ -187,4 +200,6 @@ export default function OrbitalLoader() {
       </p>
     </div>
   );
-}
+};
+
+export default OrbitalLoader;
