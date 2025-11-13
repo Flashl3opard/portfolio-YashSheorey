@@ -141,7 +141,10 @@ const GitHubIcon: React.FC = () => (
   </svg>
 );
 
-const transition = { duration: 0.6, ease: [0.4, 0.0, 0.2, 1] };
+const transition = {
+  duration: 0.6,
+  ease: [0.4, 0.0, 0.2, 1] as [number, number, number, number],
+};
 
 // ... (slideVariants function is unchanged)
 const slideVariants = (direction: number, i: number) => ({
