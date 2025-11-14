@@ -13,45 +13,52 @@ export default function ThemeToggle() {
   const containerRef = useRef<HTMLDivElement>(null);
   const waveRef = useRef<HTMLDivElement>(null);
 
-  const playCurvedSweep = () => {
+  const playWaveAnimation = () => {
     if (!waveRef.current || !containerRef.current) return;
 
-    const wave = waveRef.current;
     const container = containerRef.current;
+    const wave = waveRef.current;
 
-    // Show container (IMPORTANT FIX)
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    // Show animation container
     gsap.set(container, { display: "block" });
 
-    // Gradient depending on what theme we are switching INTO
+    // Dynamic gradients based on theme transition
     const lightGradient =
-      "bg-gradient-to-br from-white via-pink-200 to-pink-400";
+      "bg-gradient-to-br from-white via-blue-200 to-fuchsia-300";
     const darkGradient =
-      "bg-gradient-to-br from-blue-900 via-black to-blue-700";
+      "bg-gradient-to-br from-blue-900 via-black to-purple-800";
 
     const switchingToDark = !darkMode;
 
     wave.className = `
-      absolute rounded-full blur-[40px]
-      w-[3000px] h-[3000px]
+      absolute rounded-full blur-[60px]
       ${switchingToDark ? darkGradient : lightGradient}
     `;
 
-    // Start wave off-screen (TOP-RIGHT)
+    // Dynamic scaling: ensures wave covers ANY screen
+    const waveSize = Math.max(vw, vh) * 4; // large circle
     gsap.set(wave, {
-      x: "70vw",
-      y: "-70vh",
-      scale: 0.1,
-      opacity: 1,
+      width: waveSize,
+      height: waveSize,
+      borderRadius: "50%",
+      x: vw * 0.6,
+      y: -vh * 0.6,
+      scale: 0.05,
+      opacity: 0.95,
     });
+
+    let themeSwitched = false;
 
     const tl = gsap.timeline({
       defaults: { ease: "power3.inOut" },
       onComplete: () => {
-        toggleTheme();
-
         gsap.to(wave, {
           opacity: 0,
           duration: 0.4,
+          ease: "power2.out",
           onComplete: () => {
             gsap.set(container, { display: "none" });
             setAnimating(false);
@@ -60,39 +67,51 @@ export default function ThemeToggle() {
       },
     });
 
-    // TRUE diagonal sweep (TOP-RIGHT → BOTTOM-LEFT)
+    // Main sweeping animation
     tl.to(wave, {
-      x: "-80vw",
-      y: "80vh",
-      scale: 4,
-      duration: 1,
+      duration: 1.25,
+      x: -vw * 0.7,
+      y: vh * 0.7,
+      scale: 1.7,
+      onUpdate: function () {
+        if (!themeSwitched && this.progress() > 0.45) {
+          themeSwitched = true;
+          toggleTheme();
+        }
+      },
     });
   };
 
-  const handleClick = () => {
+  const handleToggle = () => {
     if (animating) return;
     setAnimating(true);
-    playCurvedSweep();
+    playWaveAnimation();
   };
 
   return (
     <>
-      {/* FIXED CONTAINER — stays invisible until animation */}
+      {/* WAVE ANIMATION LAYER */}
       <div
         ref={containerRef}
-        className="fixed inset-0 z-[60] pointer-events-none"
+        className="fixed inset-0 pointer-events-none z-[70]"
         style={{ display: "none" }}
       >
-        <div ref={waveRef} />
+        <div
+          ref={waveRef}
+          className="will-change-transform will-change-opacity"
+        />
       </div>
 
-      {/* BUTTON */}
+      {/* TOGGLE BUTTON */}
       <motion.button
-        onClick={handleClick}
-        whileTap={{ scale: 0.9 }}
-        className="fixed top-4 right-4 z-50 p-3 rounded-full
-          bg-gray-200 dark:bg-gray-800 shadow-md hover:shadow-lg 
-          transition-all duration-300 hover:scale-110 flex items-center justify-center"
+        onClick={handleToggle}
+        whileTap={{ scale: 0.92 }}
+        className="
+          fixed top-4 right-4 z-[80] p-3 rounded-full
+          bg-gray-200 dark:bg-gray-800 shadow-lg
+          hover:shadow-xl hover:scale-[1.08]
+          transition-all duration-300 flex items-center justify-center
+        "
       >
         <AnimatePresence mode="wait" initial={false}>
           {darkMode ? (
