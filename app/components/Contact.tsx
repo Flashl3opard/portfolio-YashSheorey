@@ -337,7 +337,7 @@ const Contact: React.FC = () => {
                           darkMode ? "text-gray-200" : "text-slate-700"
                         }`}
                       >
-                        Mumbai, India
+                        Jabalpur, India
                       </div>
                     </div>
                   </div>
@@ -364,7 +364,7 @@ const Contact: React.FC = () => {
                           darkMode ? "text-gray-200" : "text-slate-700"
                         }`}
                       >
-                        yashsheorey@gmail.com
+                        sheoreyyash@gmail.com
                       </div>
                     </div>
                   </div>

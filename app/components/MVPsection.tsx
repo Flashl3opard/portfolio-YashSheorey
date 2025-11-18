@@ -1,14 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import {
-  motion,
-  useScroll,
-  useTransform,
-  useSpring,
-  useMotionValue,
-  useAnimationFrame,
-} from "framer-motion";
+import { motion, useTransform, useSpring, useMotionValue } from "framer-motion";
 import { FiArrowDownCircle, FiExternalLink } from "react-icons/fi";
 import {
   FaCode,
@@ -55,7 +48,7 @@ const socials = [
   },
   {
     icon: <FaLinkedinIn />,
-    href: "https://www.linkedin.com/in/yash-sheorey/",
+    href: "https://www.linkedin.com/in/yash-sheorey-94661b28b/s",
     label: "LinkedIn",
   },
   {
@@ -447,7 +440,7 @@ const MVPsection: React.FC = () => {
                     );
                   </p>
                   <div className="mt-2 opacity-50">
-                    // AI-powered developer hub with chat & snippets.
+                    {"// AI-powered developer hub with chat & snippets."}
                   </div>
                 </div>
 

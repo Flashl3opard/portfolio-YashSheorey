@@ -4,7 +4,6 @@ import React, { useRef } from "react";
 import {
   motion,
   useScroll,
-  useTransform,
   useMotionTemplate,
   useMotionValue,
 } from "framer-motion";
@@ -72,7 +71,6 @@ const features = [
 
 /* -----------------------------------------
    Spotlight Card Component
-   (Tracks mouse position to create a radial glow)
 --------------------------------------------*/
 const SpotlightCard = ({
   children,
@@ -123,7 +121,7 @@ const SpotlightCard = ({
 --------------------------------------------*/
 const Marquee = ({ darkMode }: { darkMode: boolean }) => {
   return (
-    <div className="w-full overflow-hidden py-6 flex mask-linear-fade">
+    <div className="w-full overflow-hidden py-6 flex mask-linear-fade relative">
       <motion.div
         className="flex gap-12 md:gap-24 min-w-full"
         animate={{ x: "-50%" }}
@@ -140,7 +138,8 @@ const Marquee = ({ darkMode }: { darkMode: boolean }) => {
           </div>
         ))}
       </motion.div>
-      {/* Fade Edges */}
+
+      {/* Fade edges */}
       <div
         className={`absolute inset-y-0 left-0 w-20 bg-gradient-to-r ${
           darkMode ? "from-[#050510]" : "from-gray-50"
@@ -161,12 +160,12 @@ const Marquee = ({ darkMode }: { darkMode: boolean }) => {
 const About: React.FC = () => {
   const { darkMode } = useTheme();
   const containerRef = useRef(null);
-  const { scrollYProgress } = useScroll({
+
+  // removed unused variable "y"
+  useScroll({
     target: containerRef,
     offset: ["start end", "end start"],
   });
-
-  const y = useTransform(scrollYProgress, [0, 1], [100, -100]);
 
   return (
     <section
@@ -184,7 +183,7 @@ const About: React.FC = () => {
       />
 
       <div className="max-w-7xl mx-auto relative z-10">
-        {/* --- HEADER SECTION --- */}
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -197,6 +196,7 @@ const About: React.FC = () => {
               The Dev
             </span>
           </h2>
+
           <div
             className={`w-24 h-1 mx-auto mt-4 rounded-full ${
               darkMode ? "bg-gray-800" : "bg-gray-300"
@@ -211,9 +211,12 @@ const About: React.FC = () => {
           </div>
         </motion.div>
 
-        {/* --- BENTO GRID LAYOUT --- */}
+        {/* ----------------------------------------------------
+            BIO SECTION — FIXED APOSTROPHES
+        ----------------------------------------------------- */}
+
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-20">
-          {/* 1. LARGE BIO CARD (Span 7) */}
+          {/* BIO CARD */}
           <motion.div
             className="md:col-span-7 h-full"
             initial={{ opacity: 0, x: -50 }}
@@ -233,11 +236,12 @@ const About: React.FC = () => {
             >
               <h3 className="text-3xl font-bold mb-6 flex items-center gap-3">
                 <span className="text-4xl">👋</span>
-                I'm{" "}
+                I&apos;m{" "}
                 <span className={darkMode ? "text-cyan-300" : "text-blue-600"}>
                   Yash Sheorey
                 </span>
               </h3>
+
               <p
                 className={`text-lg leading-relaxed mb-6 ${
                   darkMode ? "text-gray-300" : "text-slate-600"
@@ -252,15 +256,17 @@ const About: React.FC = () => {
                 complex problems into simple, beautiful, and performant
                 interfaces.
               </p>
+
               <p
                 className={`text-lg leading-relaxed mb-8 ${
                   darkMode ? "text-gray-400" : "text-slate-500"
                 }`}
               >
-                When I'm not coding, I'm exploring AI models, tinkering with
-                IoT, or contributing to open source.
+                When I&apos;m not coding, I&apos;m exploring AI models,
+                tinkering with IoT, or contributing to open-source.
               </p>
 
+              {/* Resume Button */}
               <div className="flex flex-wrap gap-4">
                 <a
                   href="/resume.pdf"
@@ -278,9 +284,9 @@ const About: React.FC = () => {
             </SpotlightCard>
           </motion.div>
 
-          {/* 2. STATS & AVATAR COLUMN (Span 5) */}
+          {/* RIGHT SIDE COLUMN */}
           <div className="md:col-span-5 flex flex-col gap-6">
-            {/* Avatar / Hologram Box */}
+            {/* Avatar / Hologram */}
             <motion.div
               className="flex-1 min-h-[250px]"
               initial={{ opacity: 0, scale: 0.9 }}
@@ -295,7 +301,7 @@ const About: React.FC = () => {
                     : "bg-gradient-to-br from-blue-50 to-white shadow-lg shadow-blue-100/50"
                 }`}
               >
-                {/* Animated Rings */}
+                {/* Rings */}
                 <div
                   className={`absolute w-64 h-64 rounded-full border-2 animate-[spin_10s_linear_infinite] ${
                     darkMode
@@ -335,7 +341,7 @@ const About: React.FC = () => {
               </SpotlightCard>
             </motion.div>
 
-            {/* Stats Grid */}
+            {/* Stats */}
             <div className="grid grid-cols-3 gap-4">
               {stats.map((stat, idx) => (
                 <motion.div
@@ -368,7 +374,7 @@ const About: React.FC = () => {
           </div>
         </div>
 
-        {/* --- EXPERTISE CARDS --- */}
+        {/* Expertise Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
           {features.map((f, i) => (
             <motion.div
@@ -412,7 +418,7 @@ const About: React.FC = () => {
           ))}
         </div>
 
-        {/* --- TECH TICKER --- */}
+        {/* Tech Marquee */}
         <div className="relative w-full">
           <div className="text-center mb-6 opacity-50 font-mono text-sm uppercase tracking-widest">
             Technologies I use
