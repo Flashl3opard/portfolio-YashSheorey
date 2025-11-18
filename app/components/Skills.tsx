@@ -5,10 +5,10 @@ import {
   motion,
   useScroll,
   useTransform,
-  useSpring,
   useMotionTemplate,
   useMotionValue,
 } from "framer-motion";
+
 import {
   FaReact,
   FaNodeJs,
@@ -17,6 +17,7 @@ import {
   FaJs,
   FaGitAlt,
 } from "react-icons/fa";
+
 import {
   SiNextdotjs,
   SiTailwindcss,
@@ -25,11 +26,13 @@ import {
   SiExpress,
   SiTypescript,
 } from "react-icons/si";
+
 import { useTheme } from "./ThemeContext";
 
 /* -----------------------------------------
    Data Config
 --------------------------------------------*/
+
 const techSections = [
   {
     title: "Languages",
@@ -66,6 +69,7 @@ const techSections = [
 /* -----------------------------------------
    3D Tilt Card Component
 --------------------------------------------*/
+
 const TechCard = ({
   icon,
   name,
@@ -85,7 +89,7 @@ const TechCard = ({
     clientX,
     clientY,
   }: React.MouseEvent) {
-    const { left, top, width, height } = currentTarget.getBoundingClientRect();
+    const { left, top } = currentTarget.getBoundingClientRect();
     mouseX.set(clientX - left);
     mouseY.set(clientY - top);
   }
@@ -129,8 +133,9 @@ const TechCard = ({
           }}
         />
 
+        {/* Content */}
         <div className="relative z-10 flex flex-col items-center gap-4">
-          <span className="text-5xl drop-shadow-lg filter transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
+          <span className="text-5xl drop-shadow-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
             {icon}
           </span>
           <h4
@@ -142,7 +147,7 @@ const TechCard = ({
           </h4>
         </div>
 
-        {/* Glowing Border Bottom */}
+        {/* Bottom Glow */}
         <div
           className={`absolute bottom-0 left-0 h-1 w-full origin-left scale-x-0 transition-transform duration-300 group-hover:scale-x-100 ${
             darkMode
@@ -158,18 +163,20 @@ const TechCard = ({
 /* -----------------------------------------
    Main Skills Component
 --------------------------------------------*/
+
 const Skills = () => {
   const { darkMode } = useTheme();
+
   const containerRef = useRef(null);
 
-  // Parallax Logic
+  // Parallax
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start end", "end start"],
   });
 
   const yLeft = useTransform(scrollYProgress, [0, 1], [100, -100]);
-  const yMiddle = useTransform(scrollYProgress, [0, 1], [-100, 100]); // Moves opposite
+  const yMiddle = useTransform(scrollYProgress, [0, 1], [-100, 100]);
   const yRight = useTransform(scrollYProgress, [0, 1], [150, -150]);
 
   return (
@@ -180,7 +187,7 @@ const Skills = () => {
         darkMode ? "bg-[#050510]" : "bg-gray-50"
       }`}
     >
-      {/* --- BACKGROUND REACTOR CORE --- */}
+      {/* Background Glow */}
       <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden">
         <motion.div
           animate={{ rotate: 360 }}
@@ -191,7 +198,8 @@ const Skills = () => {
               : "bg-gradient-to-r from-blue-300 via-indigo-300 to-violet-300"
           }`}
         />
-        {/* Grid Pattern */}
+
+        {/* Grid */}
         <div
           className={`absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px] ${
             darkMode ? "opacity-30" : "opacity-50"
@@ -199,9 +207,8 @@ const Skills = () => {
         />
       </div>
 
-      {/* --- CONTENT --- */}
+      {/* Content */}
       <div className="relative z-10 max-w-7xl mx-auto">
-        {/* Heading */}
         <div className="text-center mb-20">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
@@ -209,12 +216,13 @@ const Skills = () => {
             className="text-5xl md:text-7xl font-black tracking-tighter mb-4"
           >
             <span className={darkMode ? "text-white" : "text-slate-900"}>
-              TECH
+              TECH{" "}
             </span>
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-600">
               ARSENAL
             </span>
           </motion.h2>
+
           <motion.p
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -227,17 +235,19 @@ const Skills = () => {
           </motion.p>
         </div>
 
-        {/* Parallax Columns Grid */}
+        {/* Grid with 3 Parallax Columns */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-          {/* Column 1: Languages */}
+          {/* Column 1 */}
           <motion.div style={{ y: yLeft }} className="flex flex-col gap-6">
             <h3
               className={`text-xl font-bold text-center mb-4 ${
                 darkMode ? "text-cyan-400" : "text-blue-600"
               }`}
             >
-              // Languages
+              {/* Languages */}
+              Languages
             </h3>
+
             {techSections[0].skills.map((skill, i) => (
               <TechCard
                 key={i}
@@ -249,18 +259,17 @@ const Skills = () => {
             ))}
           </motion.div>
 
-          {/* Column 2: Frameworks (Moves Reverse) */}
-          <motion.div
-            style={{ y: yMiddle }}
-            className="flex flex-col gap-6 pt-12 md:pt-0"
-          >
+          {/* Column 2 */}
+          <motion.div style={{ y: yMiddle }} className="flex flex-col gap-6">
             <h3
               className={`text-xl font-bold text-center mb-4 ${
                 darkMode ? "text-purple-400" : "text-violet-600"
               }`}
             >
-              // Frameworks
+              {/* Frameworks */}
+              Frameworks
             </h3>
+
             {techSections[1].skills.map((skill, i) => (
               <TechCard
                 key={i}
@@ -272,15 +281,17 @@ const Skills = () => {
             ))}
           </motion.div>
 
-          {/* Column 3: Tools */}
+          {/* Column 3 */}
           <motion.div style={{ y: yRight }} className="flex flex-col gap-6">
             <h3
               className={`text-xl font-bold text-center mb-4 ${
                 darkMode ? "text-emerald-400" : "text-emerald-600"
               }`}
             >
-              // Tools & DB
+              {/* Tools & DB */}
+              Tools & DB
             </h3>
+
             {techSections[2].skills.map((skill, i) => (
               <TechCard
                 key={i}

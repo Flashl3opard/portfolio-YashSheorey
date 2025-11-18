@@ -228,7 +228,7 @@ const MVPsection: React.FC = () => {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
               </span>
-              Hi, I'm Yash
+              Hi, I&apos;m Yash
             </motion.div>
 
             {/* Heading */}
@@ -296,7 +296,7 @@ const MVPsection: React.FC = () => {
                 const stack =
               </span>
               <span className={darkMode ? "text-yellow-300" : "text-amber-600"}>
-                "{techStack[techIndex].substring(0, subIndex)}"
+                &quot;{techStack[techIndex].substring(0, subIndex)}&quot;
               </span>
               <span
                 className={`w-[2px] h-5 ${
@@ -441,7 +441,10 @@ const MVPsection: React.FC = () => {
                   </p>
                   <p>
                     project.<span className="text-blue-400">deploy</span>(
-                    <span className="text-green-400">"Production"</span>);
+                    <span className="text-green-400">
+                      &quot;Production&quot;
+                    </span>
+                    );
                   </p>
                   <div className="mt-2 opacity-50">
                     // AI-powered developer hub with chat & snippets.

@@ -7,6 +7,7 @@ import {
   AnimatePresence,
   useMotionValue,
   animate,
+  type MotionValue,
 } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
 
@@ -160,10 +161,11 @@ export default function ThemeToggle() {
   );
 }
 
-/* HoloTurbulence Component
-   Binds the motion value to the <feTurbulence> baseFrequency.
-*/
-function HoloTurbulence({ turbulence }: { turbulence: any }) {
+/* ------------------------------------------
+   HoloTurbulence Component (Typed properly)
+-------------------------------------------*/
+
+function HoloTurbulence({ turbulence }: { turbulence: MotionValue<number> }) {
   const ref = useRef<SVGFETurbulenceElement>(null);
 
   useEffect(() => {
