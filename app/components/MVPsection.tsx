@@ -1,8 +1,15 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { FiArrowDownCircle } from "react-icons/fi";
+import React, { useEffect, useState, useRef } from "react";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useSpring,
+  useMotionValue,
+  useAnimationFrame,
+} from "framer-motion";
+import { FiArrowDownCircle, FiExternalLink } from "react-icons/fi";
 import {
   FaCode,
   FaBrain,
@@ -11,23 +18,18 @@ import {
   FaLinkedinIn,
   FaDiscord,
   FaTwitter,
+  FaReact,
 } from "react-icons/fa";
 import { useTheme } from "./ThemeContext";
 
 /**
- * Layout 2 — Left-Aligned Hero (Blue Professional light theme)
- *
- * Features:
- * - Left text column (name, role, typing tech, CTA)
- * - Right visual column with stacked cards + glow orbs
- * - Improved light-mode palette (blue / cyan / violet)
- * - Fully responsive (collapses into single column on small screens)
- * - Smooth Framer Motion entry animations
- * - Accessible buttons & links
- * - Typing and rotating role animations preserved
+ * ----------------------------------------------------------------------------
+ * UPGRADED HERO SECTION
+ * Features: 3D Mouse Tilt, Floating Particles, Liquid Gradients, Staggered Text
+ * ----------------------------------------------------------------------------
  */
 
-/* ------------------------------ content ------------------------------ */
+/* ------------------------------ Data ------------------------------ */
 const roles = [
   "Frontend Developer",
   "Full Stack Developer",
@@ -64,12 +66,7 @@ const socials = [
   { icon: <FaTwitter />, href: "https://x.com/flashl3opard", label: "Twitter" },
 ];
 
-/* ------------------------------ small helpers ------------------------------ */
-const socialIconProps =
-  "text-2xl md:text-3xl transition-all duration-300 transform hover:scale-110";
-const iconLinkProps =
-  "inline-flex items-center justify-center w-10 h-10 rounded-full";
-
+/* ------------------------------ Helpers ------------------------------ */
 const useCycleIndex = (len: number, ms = 3500) => {
   const [idx, setIdx] = useState(0);
   useEffect(() => {
@@ -79,14 +76,66 @@ const useCycleIndex = (len: number, ms = 3500) => {
   return [idx, setIdx] as const;
 };
 
-/* ------------------------------ component ------------------------------ */
+// 3D Tilt Card Component
+const TiltCard = ({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => {
+  const ref = useRef<HTMLDivElement>(null);
+
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  const mouseX = useSpring(x, { stiffness: 500, damping: 40 });
+  const mouseY = useSpring(y, { stiffness: 500, damping: 40 });
+
+  const rotateX = useTransform(mouseY, [-0.5, 0.5], ["7deg", "-7deg"]);
+  const rotateY = useTransform(mouseX, [-0.5, 0.5], ["-7deg", "7deg"]);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!ref.current) return;
+    const rect = ref.current.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const mouseXFromCenter = e.clientX - rect.left - width / 2;
+    const mouseYFromCenter = e.clientY - rect.top - height / 2;
+    x.set(mouseXFromCenter / width);
+    y.set(mouseYFromCenter / height);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  return (
+    <motion.div
+      ref={ref}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        rotateX,
+        rotateY,
+        transformStyle: "preserve-3d",
+      }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+};
+
+/* ------------------------------ Main Component ------------------------------ */
 const MVPsection: React.FC = () => {
   const { darkMode } = useTheme();
 
-  // role cycle
+  // Role Rotation
   const [roleIndex] = useCycleIndex(roles.length, 3500);
 
-  // typing effect for tech stack
+  // Typing Logic
   const [techIndex, setTechIndex] = useState(0);
   const [subIndex, setSubIndex] = useState(0);
   const [reverse, setReverse] = useState(false);
@@ -116,337 +165,397 @@ const MVPsection: React.FC = () => {
   return (
     <section
       id="home"
-      className={`w-full min-h-screen flex items-center py-16 px-6 md:px-12 transition-all duration-700 ${
+      className={`relative w-full min-h-screen flex items-center overflow-hidden transition-colors duration-700 ${
         darkMode
-          ? "bg-gradient-to-br from-[#050510] via-[#07102a] to-[#07142e] text-white"
-          : "bg-gradient-to-br from-[#f8fbff] via-[#eef6ff] to-[#e7f0ff] text-slate-900"
+          ? "bg-[#050510] text-white"
+          : "bg-gradient-to-br from-white via-blue-50 to-indigo-50 text-slate-900"
       }`}
     >
-      <div className="max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-        {/* LEFT: TEXT */}
-        <div className="lg:col-span-6 flex flex-col gap-6">
+      {/* --- BACKGROUND ANIMATIONS --- */}
+
+      {/* Grid Background */}
+      <div
+        className={`absolute inset-0 z-0 ${
+          darkMode ? "opacity-20" : "opacity-40"
+        }`}
+      >
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]" />
+      </div>
+
+      {/* Moving Ambient Blobs */}
+      <motion.div
+        animate={{
+          scale: [1, 1.2, 1],
+          rotate: [0, 90, 0],
+        }}
+        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+        className="absolute -top-40 -left-40 w-96 h-96 bg-cyan-500/20 rounded-full blur-[128px] pointer-events-none"
+      />
+      <motion.div
+        animate={{
+          scale: [1, 1.5, 1],
+          x: [0, 100, 0],
+        }}
+        transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute top-1/2 right-0 w-[500px] h-[500px] bg-violet-600/20 rounded-full blur-[128px] pointer-events-none"
+      />
+
+      {/* --- MAIN CONTENT --- */}
+      <div className="relative z-10 max-w-7xl w-full mx-auto px-6 md:px-12 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        {/* LEFT: TEXT COLUMN */}
+        <div className="lg:col-span-7 flex flex-col gap-6">
           <motion.div
-            initial={{ opacity: 0, x: -40 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: { opacity: 0 },
+              visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
+            }}
           >
-            <p
-              className={`inline-block text-sm font-medium mb-2 rounded-full px-3 py-1 ${
+            {/* Badge */}
+            <motion.div
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0 },
+              }}
+              className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium mb-6 border ${
                 darkMode
-                  ? "bg-white/6 text-cyan-300"
-                  : "bg-cyan-100 text-cyan-700"
+                  ? "bg-cyan-950/30 border-cyan-500/30 text-cyan-300"
+                  : "bg-blue-50 border-blue-200 text-blue-700"
               }`}
             >
-              Hi, I'm Yash 👋
-            </p>
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
+              </span>
+              Hi, I'm Yash
+            </motion.div>
 
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight">
+            {/* Heading */}
+            <motion.h1
+              variants={{
+                hidden: { opacity: 0, y: 30 },
+                visible: { opacity: 1, y: 0 },
+              }}
+              className="text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight leading-[1.1]"
+            >
               <span className="block">Yash Sheorey</span>
               <span
-                className={`block mt-2 text-2xl md:text-3xl font-semibold ${
-                  darkMode ? "text-cyan-200/90" : "text-slate-700"
+                className={`block text-3xl md:text-4xl mt-2 font-semibold ${
+                  darkMode ? "text-slate-400" : "text-slate-600"
                 }`}
               >
-                <span className="inline-block bg-clip-text text-transparent bg-gradient-to-r from-cyan-500 to-violet-500">
-                  Building modern web experiences
-                </span>
+                Building{" "}
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 animate-gradient-x">
+                  Futuristic Digital
+                </span>{" "}
+                Experiences
               </span>
-            </h1>
+            </motion.h1>
 
-            <div className="mt-6 max-w-xl">
-              <h2
-                className={`text-lg md:text-xl mb-2 font-semibold ${
-                  darkMode ? "text-gray-300" : "text-slate-700"
+            {/* Animated Role */}
+            <motion.div
+              variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
+              className="h-8 mt-4 overflow-hidden"
+            >
+              <motion.div
+                key={roleIndex}
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -20, opacity: 0 }}
+                transition={{ duration: 0.5 }}
+                className={`text-xl font-mono ${
+                  darkMode ? "text-cyan-200" : "text-blue-600"
                 }`}
               >
-                {roles[roleIndex]}
-              </h2>
+                &gt; {roles[roleIndex]}_
+              </motion.div>
+            </motion.div>
 
-              <p
-                className={`text-sm md:text-base leading-relaxed ${
-                  darkMode ? "text-gray-400" : "text-slate-600"
+            {/* Description */}
+            <motion.p
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0 },
+              }}
+              className={`mt-6 text-lg leading-relaxed max-w-xl ${
+                darkMode ? "text-gray-400" : "text-slate-600"
+              }`}
+            >
+              I craft fast, accessible, production-ready web apps. Combining
+              beautiful UI, robust backend systems, and a touch of AI to solve
+              real-world problems.
+            </motion.p>
+
+            {/* Tech Stack Typing */}
+            <motion.div
+              variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
+              className="mt-6 flex items-center gap-2 text-sm md:text-base font-mono"
+            >
+              <span className={darkMode ? "text-gray-500" : "text-gray-400"}>
+                const stack =
+              </span>
+              <span className={darkMode ? "text-yellow-300" : "text-amber-600"}>
+                "{techStack[techIndex].substring(0, subIndex)}"
+              </span>
+              <span
+                className={`w-[2px] h-5 ${
+                  darkMode ? "bg-white" : "bg-black"
+                } animate-blink`}
+              />
+            </motion.div>
+
+            {/* Buttons */}
+            <motion.div
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0 },
+              }}
+              className="mt-10 flex flex-wrap gap-4"
+            >
+              <button
+                onClick={scrollToProjects}
+                className={`group relative px-8 py-4 rounded-full font-bold overflow-hidden transition-all hover:scale-105 ${
+                  darkMode
+                    ? "bg-white text-black"
+                    : "bg-slate-900 text-white shadow-xl shadow-blue-200"
                 }`}
               >
-                I craft fast, accessible, production-ready web apps — combining
-                beautiful UI, robust backend systems, and a touch of AI.
-              </p>
-
-              {/* typing tech */}
-              <div className="mt-4 flex items-center gap-2">
-                <span
-                  className={`text-sm md:text-base ${
-                    darkMode ? "text-gray-300" : "text-slate-700"
-                  }`}
-                >
-                  Working with
+                <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full group-hover:animate-shimmer" />
+                <span className="flex items-center gap-2">
+                  Explore Projects <FiArrowDownCircle />
                 </span>
-                <span className="font-medium text-sm md:text-base">
-                  <span
-                    className={`inline-block ${
-                      darkMode ? "text-cyan-300" : "text-blue-600"
-                    }`}
-                  >
-                    {techStack[techIndex].substring(0, subIndex)}
-                  </span>
-                  <span
-                    className={`ml-2 h-5 w-px animate-pulse ${
-                      darkMode ? "bg-cyan-300" : "bg-blue-600"
-                    }`}
-                  />
-                </span>
-              </div>
+              </button>
 
-              {/* Socials */}
-              <div className="mt-6 flex items-center gap-3">
+              <div className="flex items-center gap-4 pl-4">
                 {socials.map((s, i) => (
                   <a
                     key={i}
                     href={s.href}
-                    aria-label={s.label}
                     target="_blank"
                     rel="noreferrer"
-                    className={`${iconLinkProps} ${
+                    className={`text-2xl transition-transform hover:-translate-y-1 hover:scale-110 ${
                       darkMode
-                        ? "bg-white/6 text-gray-200 hover:bg-white/10"
-                        : "bg-white shadow-sm text-slate-700 hover:shadow-md"
+                        ? "text-gray-400 hover:text-white"
+                        : "text-slate-400 hover:text-blue-600"
                     }`}
                   >
-                    <span className={socialIconProps}>{s.icon}</span>
+                    {s.icon}
                   </a>
                 ))}
               </div>
-
-              {/* CTAs */}
-              <div className="mt-8 flex flex-col sm:flex-row gap-3">
-                <button
-                  onClick={scrollToProjects}
-                  className={`inline-flex items-center gap-3 px-6 py-3 rounded-full font-semibold transition-transform duration-200 ${
-                    darkMode
-                      ? "bg-gradient-to-r from-cyan-500 to-fuchsia-500 text-white shadow-[0_8px_30px_rgba(0,255,255,0.08)] hover:scale-[1.02]"
-                      : "bg-gradient-to-r from-blue-600 to-violet-600 text-white hover:shadow-lg hover:scale-[1.02]"
-                  }`}
-                >
-                  Explore Projects
-                </button>
-
-                <a
-                  href="#contact"
-                  className={`inline-flex items-center gap-3 px-6 py-3 rounded-full font-medium border transition-colors duration-200 ${
-                    darkMode
-                      ? "border-cyan-400 text-cyan-300 hover:bg-cyan-400/10"
-                      : "border-blue-200 text-blue-600 hover:bg-blue-50"
-                  }`}
-                >
-                  Get in Touch
-                </a>
-              </div>
-            </div>
+            </motion.div>
           </motion.div>
         </div>
 
-        {/* RIGHT: VISUALS */}
-        <div className="lg:col-span-6 flex items-center justify-center">
+        {/* RIGHT: 3D VISUALS */}
+        <div className="lg:col-span-5 relative perspective-1000">
+          {/* 3D Floating Icons (Behind) */}
           <motion.div
-            initial={{ opacity: 0, x: 40, scale: 0.98 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            transition={{ duration: 0.9, ease: "easeOut" }}
-            className="w-full max-w-md relative"
+            animate={{ y: [0, -20, 0], rotate: [0, 5, 0] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            className={`absolute -top-12 -right-12 text-6xl opacity-20 z-0 ${
+              darkMode ? "text-cyan-400" : "text-blue-400"
+            }`}
           >
-            {/* Orbs behind */}
-            <div
-              className="absolute -left-10 -top-10 w-40 h-40 rounded-full blur-[90px] opacity-40 pointer-events-none"
-              style={{
-                background: darkMode
-                  ? "radial-gradient(circle, rgba(6,182,212,0.25) 0%, rgba(139,92,246,0.12) 50%)"
-                  : "radial-gradient(circle, rgba(59,130,246,0.22) 0%, rgba(139,92,246,0.12) 50%)",
-              }}
-            />
+            <FaReact />
+          </motion.div>
 
-            <div
-              className="absolute right-0 top-12 w-56 h-56 rounded-full blur-[120px] opacity-30 pointer-events-none"
-              style={{
-                background: darkMode
-                  ? "radial-gradient(circle, rgba(139,92,246,0.18) 0%, rgba(6,182,212,0.08) 60%)"
-                  : "radial-gradient(circle, rgba(139,92,246,0.12) 0%, rgba(14,165,233,0.08) 60%)",
-              }}
-            />
+          <motion.div
+            animate={{ y: [0, 20, 0], x: [0, 10, 0] }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+            className={`absolute bottom-0 -left-12 text-5xl opacity-20 z-0 ${
+              darkMode ? "text-purple-400" : "text-violet-400"
+            }`}
+          >
+            <FaBrain />
+          </motion.div>
 
-            {/* Card stack */}
+          {/* THE 3D CARD */}
+          <TiltCard className="relative z-10 w-full">
             <div
-              className={`relative rounded-2xl overflow-hidden shadow-2xl ${
+              className={`relative rounded-3xl p-[1px] overflow-hidden group ${
                 darkMode
-                  ? "bg-gradient-to-br from-black/40 to-white/3 border border-white/6"
-                  : "bg-white/90 border border-gray-100"
+                  ? "bg-gradient-to-br from-cyan-500/50 via-purple-500/50 to-transparent"
+                  : "bg-gradient-to-br from-blue-500 via-indigo-500 to-transparent"
               }`}
             >
-              {/* top small badge */}
+              {/* Inner Card Background */}
               <div
-                className={`px-4 py-2 flex items-center justify-between ${
-                  darkMode ? "bg-black/20" : "bg-white/95"
+                className={`relative rounded-[23px] h-full p-6 md:p-8 backdrop-blur-xl ${
+                  darkMode ? "bg-black/80" : "bg-white/90"
                 }`}
               >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-3 h-3 rounded-full ${
-                      darkMode ? "bg-cyan-400" : "bg-blue-500"
-                    }`}
-                  />
-                  <div
-                    className={`${
-                      darkMode ? "text-gray-300" : "text-slate-800"
-                    } font-semibold`}
-                  >
-                    Featured Project
+                {/* Header */}
+                <div className="flex justify-between items-start mb-6">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`p-3 rounded-xl ${
+                        darkMode
+                          ? "bg-cyan-500/20 text-cyan-300"
+                          : "bg-blue-100 text-blue-600"
+                      }`}
+                    >
+                      <FaCode size={24} />
+                    </div>
+                    <div>
+                      <h3
+                        className={`font-bold text-lg ${
+                          darkMode ? "text-white" : "text-slate-800"
+                        }`}
+                      >
+                        VibeXCode
+                      </h3>
+                      <p
+                        className={`text-xs font-mono ${
+                          darkMode ? "text-gray-400" : "text-slate-500"
+                        }`}
+                      >
+                        Dev Collaboration Hub
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-1">
+                    <div className="w-2 h-2 rounded-full bg-red-500/80" />
+                    <div className="w-2 h-2 rounded-full bg-yellow-500/80" />
+                    <div className="w-2 h-2 rounded-full bg-green-500/80" />
                   </div>
                 </div>
-                <div className="text-xs text-gray-400">Live</div>
-              </div>
 
-              <div className="p-6">
-                <h3
-                  className={`text-xl font-bold ${
-                    darkMode ? "text-white" : "text-slate-900"
+                {/* Code Snippet Visual */}
+                <div
+                  className={`rounded-lg p-4 mb-6 font-mono text-xs leading-5 overflow-hidden relative ${
+                    darkMode
+                      ? "bg-gray-900/50 text-gray-300"
+                      : "bg-slate-100 text-slate-600"
                   }`}
                 >
-                  VibeXCode — Dev Hub
-                </h3>
-                <p
-                  className={`mt-2 text-sm leading-relaxed ${
-                    darkMode ? "text-gray-300" : "text-slate-600"
-                  }`}
-                >
-                  AI-powered developer hub with chat, snippets, and cloud
-                  storage. Built with Next.js, Appwrite & realtime messaging.
-                </p>
+                  <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-cyan-400 to-purple-500" />
+                  <p>
+                    <span className="text-purple-400">const</span> project ={" "}
+                    <span className="text-yellow-400">new</span> Future();
+                  </p>
+                  <p>
+                    project.<span className="text-blue-400">integrate</span>
+                    (AI);
+                  </p>
+                  <p>
+                    project.<span className="text-blue-400">deploy</span>(
+                    <span className="text-green-400">"Production"</span>);
+                  </p>
+                  <div className="mt-2 opacity-50">
+                    // AI-powered developer hub with chat & snippets.
+                  </div>
+                </div>
 
-                <div className="mt-4 flex items-center gap-3">
+                {/* Tech Tags */}
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {["Next.js", "Appwrite", "Realtime"].map((tag) => (
+                    <span
+                      key={tag}
+                      className={`px-3 py-1 rounded-md text-xs font-semibold border ${
+                        darkMode
+                          ? "border-white/10 bg-white/5 text-gray-300"
+                          : "border-slate-200 bg-slate-50 text-slate-600"
+                      }`}
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+
+                {/* Action Area */}
+                <div className="flex items-center justify-between pt-4 border-t border-gray-500/10">
+                  <div className="flex -space-x-2">
+                    {[1, 2, 3].map((i) => (
+                      <div
+                        key={i}
+                        className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-[10px] ${
+                          darkMode
+                            ? "border-black bg-gray-800"
+                            : "border-white bg-gray-200"
+                        }`}
+                      >
+                        Dev
+                      </div>
+                    ))}
+                  </div>
                   <a
                     href="https://github.com/Flashl3opard/vibexcode"
-                    target="_blank"
-                    rel="noreferrer"
-                    className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${
+                    className={`flex items-center gap-2 text-sm font-bold transition-colors ${
                       darkMode
-                        ? "bg-white/6 text-white/90"
-                        : "bg-gray-100 text-slate-800"
+                        ? "text-cyan-400 hover:text-cyan-300"
+                        : "text-blue-600 hover:text-blue-700"
                     }`}
                   >
-                    <FaGithub /> View
-                  </a>
-                  <span
-                    className={`text-xs px-2 py-1 rounded-full ${
-                      darkMode
-                        ? "bg-white/4 text-gray-300"
-                        : "bg-blue-50 text-blue-600"
-                    }`}
-                  >
-                    Next.js
-                  </span>
-                  <span
-                    className={`text-xs px-2 py-1 rounded-full ${
-                      darkMode
-                        ? "bg-white/4 text-gray-300"
-                        : "bg-purple-50 text-violet-600"
-                    }`}
-                  >
-                    Appwrite
-                  </span>
-                </div>
-              </div>
-
-              {/* Lower card preview */}
-              <div className="p-4 border-t border-t-gray-100/20 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-8 h-8 rounded-md ${
-                      darkMode ? "bg-white/6" : "bg-slate-100"
-                    } flex items-center justify-center`}
-                  >
-                    <FaCode
-                      className={`${
-                        darkMode ? "text-cyan-300" : "text-blue-600"
-                      }`}
-                    />
-                  </div>
-                  <div>
-                    <div
-                      className={`${
-                        darkMode ? "text-gray-200" : "text-slate-900"
-                      } font-semibold`}
-                    >
-                      Cosmic Portfolio
-                    </div>
-                    <div
-                      className={`text-xs ${
-                        darkMode ? "text-gray-400" : "text-gray-500"
-                      }`}
-                    >
-                      React · Framer Motion · Tailwind
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <a
-                    href="https://github.com/Flashl3opard"
-                    target="_blank"
-                    rel="noreferrer"
-                    className={`${
-                      darkMode ? "text-cyan-300" : "text-blue-600"
-                    } hover:underline`}
-                  >
-                    View Repos
+                    View Code <FiExternalLink />
                   </a>
                 </div>
               </div>
             </div>
 
-            {/* small floating icons around card */}
-            <div className="pointer-events-none">
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
-              >
-                <FaSatellite
-                  className={`absolute -right-6 -bottom-6 text-3xl ${
-                    darkMode ? "text-violet-400/20" : "text-indigo-500/20"
-                  }`}
-                />
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, y: -6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8 }}
-              >
-                <FaBrain
-                  className={`absolute -left-10 -bottom-10 text-2xl ${
-                    darkMode ? "text-fuchsia-400/20" : "text-cyan-500/20"
-                  }`}
-                />
-              </motion.div>
-            </div>
-          </motion.div>
+            {/* Floating Elements connected to card */}
+            <motion.div
+              style={{ z: 50 }}
+              className="absolute -right-6 top-10 p-3 rounded-lg bg-gradient-to-br from-purple-600 to-indigo-600 shadow-lg shadow-purple-500/30 text-white transform translate-z-20"
+            >
+              <FaSatellite className="text-xl" />
+            </motion.div>
+            <motion.div
+              style={{ z: 30 }}
+              className={`absolute -left-4 bottom-20 px-4 py-2 rounded-lg shadow-lg text-sm font-bold transform -translate-z-10 ${
+                darkMode ? "bg-gray-800 text-white" : "bg-white text-slate-900"
+              }`}
+            >
+              🚀 Live Demo
+            </motion.div>
+          </TiltCard>
         </div>
       </div>
 
-      {/* scroll down CTA (centered bottom on mobile, right aligned on wide) */}
-      <div className="fixed left-1/2 -translate-x-1/2 bottom-8 z-40 lg:left-auto lg:right-12 lg:translate-x-0">
-        <motion.button
-          onClick={scrollToProjects}
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.2 }}
-          className={`flex items-center gap-2 px-3 py-2 rounded-full ${
-            darkMode
-              ? "bg-white/6 text-cyan-300"
-              : "bg-white shadow text-blue-600"
-          } hover:scale-105 transition-transform`}
-          aria-label="Scroll to projects"
-        >
-          <FiArrowDownCircle className="w-6 h-6" />
-          <span className="hidden lg:inline text-sm">See projects</span>
-        </motion.button>
-      </div>
+      {/* Bottom Scroll Indicator */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1, y: [0, 10, 0] }}
+        transition={{ delay: 2, duration: 2, repeat: Infinity }}
+        className="absolute bottom-10 left-1/2 -translate-x-1/2 pointer-events-none"
+      >
+        <FiArrowDownCircle
+          className={`text-3xl ${
+            darkMode ? "text-gray-600" : "text-slate-300"
+          }`}
+        />
+      </motion.div>
+
+      {/* Custom Styles for animations not in Tailwind */}
+      <style jsx global>{`
+        @keyframes shimmer {
+          100% {
+            transform: translateX(100%);
+          }
+        }
+        .animate-shimmer {
+          animation: shimmer 2s infinite;
+        }
+        .animate-blink {
+          animation: blink 1s step-end infinite;
+        }
+        @keyframes blink {
+          0%,
+          100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0;
+          }
+        }
+        .perspective-1000 {
+          perspective: 1000px;
+        }
+        .transform-style-3d {
+          transform-style: preserve-3d;
+        }
+      `}</style>
     </section>
   );
 };

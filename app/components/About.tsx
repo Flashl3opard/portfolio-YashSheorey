@@ -1,189 +1,425 @@
 "use client";
 
-import React from "react";
-import { motion } from "framer-motion";
-import { FaDownload } from "react-icons/fa";
+import React, { useRef } from "react";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useMotionTemplate,
+  useMotionValue,
+} from "framer-motion";
+import {
+  FaDownload,
+  FaReact,
+  FaNodeJs,
+  FaDatabase,
+  FaServer,
+  FaCode,
+  FaBrain,
+  FaMicrochip,
+} from "react-icons/fa";
+import {
+  SiNextdotjs,
+  SiTailwindcss,
+  SiTypescript,
+  SiMongodb,
+  SiDocker,
+  SiLinux,
+} from "react-icons/si";
 import { useTheme } from "./ThemeContext";
 
-// ---------------- Expertise Data ----------------
-const expertise = [
-  {
-    id: 1,
-    icon: "M6 22l6-4 6 4V4a2 2 0 00-2-2H8a2 2 0 00-2 2v18z",
-    title: "Frontend Mastery",
-    description:
-      "Building fast, accessible, and responsive UIs with React, Next.js, Tailwind, and modern state management.",
-    color: "cyan",
-  },
-  {
-    id: 2,
-    icon: "M12 21.5V10M17 14.5l-5-5-5 5M17 19H7a4 4 0 010-8h10a4 4 0 010 8z",
-    title: "Full Stack Integration",
-    description:
-      "Designing robust REST APIs and managing databases with Node.js, Express, and NoSQL systems.",
-    color: "fuchsia",
-  },
-  {
-    id: 3,
-    icon: "M2 13v6a2 2 0 002 2h16a2 2 0 002-2v-6M12 2v11M16 6l-4 4-4-4",
-    title: "IoT & Edge Computing",
-    description:
-      "Connecting devices with embedded C/C++, MQTT, ESP systems, and real-time cloud data streaming.",
-    color: "violet",
-  },
-] as const;
+/* -----------------------------------------
+   Data & Config
+--------------------------------------------*/
+const stats = [
+  { label: "Years Experience", value: "2+" },
+  { label: "Projects Completed", value: "15+" },
+  { label: "Global Contribs", value: "100+" },
+];
 
-// ---------------- Color Map ----------------
-const colorMap = {
-  cyan: {
-    text: "text-cyan-500",
-    border: "border-cyan-500/30",
+const techTicker = [
+  { Icon: FaReact, color: "text-cyan-400" },
+  { Icon: SiNextdotjs, color: "text-white" },
+  { Icon: SiTypescript, color: "text-blue-500" },
+  { Icon: SiTailwindcss, color: "text-cyan-300" },
+  { Icon: FaNodeJs, color: "text-green-500" },
+  { Icon: SiMongodb, color: "text-green-400" },
+  { Icon: FaDatabase, color: "text-yellow-400" },
+  { Icon: SiDocker, color: "text-blue-400" },
+  { Icon: SiLinux, color: "text-yellow-200" },
+];
+
+const features = [
+  {
+    title: "Frontend Architecture",
+    desc: "Pixel-perfect, responsive UIs with React, Next.js & Framer Motion.",
+    icon: <FaCode />,
+    color: "from-cyan-500 to-blue-500",
   },
-  fuchsia: {
-    text: "text-fuchsia-500",
-    border: "border-fuchsia-500/30",
+  {
+    title: "Backend Systems",
+    desc: "Scalable APIs & DB management using Node, Express, Appwrite & SQL.",
+    icon: <FaServer />,
+    color: "from-violet-500 to-purple-500",
   },
-  violet: {
-    text: "text-violet-500",
-    border: "border-violet-500/30",
+  {
+    title: "AI & IoT Fusion",
+    desc: "Integrating LLMs and Edge computing for smart, adaptive applications.",
+    icon: <FaMicrochip />,
+    color: "from-fuchsia-500 to-pink-500",
   },
+];
+
+/* -----------------------------------------
+   Spotlight Card Component
+   (Tracks mouse position to create a radial glow)
+--------------------------------------------*/
+const SpotlightCard = ({
+  children,
+  className = "",
+  spotlightColor = "rgba(255, 255, 255, 0.25)",
+}: {
+  children: React.ReactNode;
+  className?: string;
+  spotlightColor?: string;
+}) => {
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  function handleMouseMove({
+    currentTarget,
+    clientX,
+    clientY,
+  }: React.MouseEvent) {
+    const { left, top } = currentTarget.getBoundingClientRect();
+    mouseX.set(clientX - left);
+    mouseY.set(clientY - top);
+  }
+
+  return (
+    <div
+      className={`relative border border-white/10 overflow-hidden group ${className}`}
+      onMouseMove={handleMouseMove}
+    >
+      <motion.div
+        className="pointer-events-none absolute -inset-px rounded-xl opacity-0 transition duration-300 group-hover:opacity-100"
+        style={{
+          background: useMotionTemplate`
+            radial-gradient(
+              650px circle at ${mouseX}px ${mouseY}px,
+              ${spotlightColor},
+              transparent 80%
+            )
+          `,
+        }}
+      />
+      <div className="relative h-full">{children}</div>
+    </div>
+  );
 };
 
-// ---------------- SVG ICON COMPONENT ----------------
-interface IconProps {
-  path: string;
-  color: keyof typeof colorMap;
-}
+/* -----------------------------------------
+   Infinite Marquee Component
+--------------------------------------------*/
+const Marquee = ({ darkMode }: { darkMode: boolean }) => {
+  return (
+    <div className="w-full overflow-hidden py-6 flex mask-linear-fade">
+      <motion.div
+        className="flex gap-12 md:gap-24 min-w-full"
+        animate={{ x: "-50%" }}
+        transition={{ duration: 20, ease: "linear", repeat: Infinity }}
+      >
+        {[...techTicker, ...techTicker, ...techTicker].map((tech, i) => (
+          <div
+            key={i}
+            className={`text-4xl md:text-5xl flex items-center gap-2 ${
+              darkMode ? "opacity-80" : "opacity-60 drop-shadow-md"
+            }`}
+          >
+            <tech.Icon className={tech.color} />
+          </div>
+        ))}
+      </motion.div>
+      {/* Fade Edges */}
+      <div
+        className={`absolute inset-y-0 left-0 w-20 bg-gradient-to-r ${
+          darkMode ? "from-[#050510]" : "from-gray-50"
+        } to-transparent z-10`}
+      />
+      <div
+        className={`absolute inset-y-0 right-0 w-20 bg-gradient-to-l ${
+          darkMode ? "from-[#050510]" : "from-gray-50"
+        } to-transparent z-10`}
+      />
+    </div>
+  );
+};
 
-const CustomIcon: React.FC<IconProps> = ({ path, color }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={2}
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={`w-10 h-10 md:w-12 md:h-12 ${colorMap[color].text}`}
-  >
-    <path d={path} />
-  </svg>
-);
-
-// ---------------- ABOUT SECTION ----------------
+/* -----------------------------------------
+   Main About Component
+--------------------------------------------*/
 const About: React.FC = () => {
   const { darkMode } = useTheme();
+  const containerRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"],
+  });
+
+  const y = useTransform(scrollYProgress, [0, 1], [100, -100]);
 
   return (
     <section
       id="about"
-      className={`relative w-full py-24 md:py-32 flex flex-col items-center px-4 md:px-6 transition-colors duration-500 ${
-        darkMode ? "bg-[#050510]" : "bg-gray-50"
+      ref={containerRef}
+      className={`relative w-full py-24 md:py-32 px-6 overflow-hidden transition-colors duration-700 ${
+        darkMode ? "bg-[#050510] text-white" : "bg-gray-50 text-slate-900"
       }`}
     >
-      {/* -------- Header -------- */}
-      <motion.h2
-        className="text-4xl md:text-6xl font-extrabold mb-12 bg-gradient-to-r from-cyan-500 via-fuchsia-500 to-violet-500 bg-clip-text text-transparent text-center"
-        initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6 }}
-      >
-        About Me
-      </motion.h2>
-
-      {/* -------- Main Card -------- */}
-      <motion.div
-        className={`max-w-5xl backdrop-blur-xl rounded-3xl p-6 md:p-12 shadow-xl transition-shadow duration-300 ${
-          darkMode
-            ? "bg-white/5 border border-white/20"
-            : "bg-white/80 border border-gray-300"
+      {/* Background Grid */}
+      <div
+        className={`absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:32px_32px] ${
+          darkMode ? "opacity-20" : "opacity-40"
         }`}
-        initial={{ opacity: 0, scale: 0.93 }}
-        whileInView={{ opacity: 1, scale: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.8 }}
-      >
-        {/* -------- Bio -------- */}
-        <div
-          className={`text-lg md:text-xl leading-relaxed mb-12 text-center ${
-            darkMode ? "text-gray-200" : "text-gray-700"
-          }`}
-        >
-          <p className="mb-4">
-            I&apos;m{" "}
-            <span
-              className={`font-bold ${
-                darkMode ? "text-cyan-400" : "text-cyan-600"
-              }`}
-            >
-              Yash Sheorey
-            </span>
-            , a developer blending{" "}
-            <span className="text-cyan-500 font-semibold">futuristic UI</span>{" "}
-            with{" "}
-            <span className="text-fuchsia-500 font-semibold">
-              high-performance engineering
-            </span>
-            .
-          </p>
+      />
 
-          <p>
-            I craft scalable, visually immersive, and interactive experiences —
-            everything from smooth 3D animations to backend-driven logic. My
-            focus is turning futuristic ideas into polished digital products.
-          </p>
-        </div>
-
-        {/* -------- Resume Button -------- */}
+      <div className="max-w-7xl mx-auto relative z-10">
+        {/* --- HEADER SECTION --- */}
         <motion.div
-          className="flex justify-center mb-12"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
+          className="text-center mb-16"
         >
-          <a
-            href="/resume.pdf"
-            download
-            className="group flex items-center gap-3 px-8 py-3 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-bold uppercase text-sm tracking-wider hover:scale-[1.05] transition-all duration-300 shadow-lg"
+          <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter">
+            About{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">
+              The Dev
+            </span>
+          </h2>
+          <div
+            className={`w-24 h-1 mx-auto mt-4 rounded-full ${
+              darkMode ? "bg-gray-800" : "bg-gray-300"
+            }`}
           >
-            <FaDownload className="text-lg group-hover:animate-pulse" />
-            Download Resume
-          </a>
+            <motion.div
+              className="h-full bg-gradient-to-r from-cyan-500 to-purple-500 rounded-full"
+              initial={{ width: 0 }}
+              whileInView={{ width: "100%" }}
+              transition={{ duration: 1, delay: 0.2 }}
+            />
+          </div>
         </motion.div>
 
-        {/* -------- Expertise Section -------- */}
-        <h3 className="text-3xl font-bold text-center mb-8 bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-fuchsia-400">
-          Core Expertise
-        </h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-          {expertise.map((item, index) => (
-            <motion.div
-              key={item.id}
-              className={`p-6 rounded-2xl border ${
-                colorMap[item.color].border
-              } transition-all duration-500 cursor-pointer shadow-lg hover:shadow-xl hover:scale-105 ${
-                darkMode
-                  ? "bg-white/5 text-gray-200"
-                  : "bg-gray-100 text-gray-800"
+        {/* --- BENTO GRID LAYOUT --- */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-20">
+          {/* 1. LARGE BIO CARD (Span 7) */}
+          <motion.div
+            className="md:col-span-7 h-full"
+            initial={{ opacity: 0, x: -50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <SpotlightCard
+              className={`h-full rounded-3xl p-8 md:p-10 backdrop-blur-xl flex flex-col justify-center shadow-2xl ${
+                darkMode ? "bg-white/5" : "bg-white shadow-blue-100"
               }`}
-              initial={{ opacity: 0, y: 25 }}
+              spotlightColor={
+                darkMode
+                  ? "rgba(6, 182, 212, 0.15)"
+                  : "rgba(59, 130, 246, 0.15)"
+              }
+            >
+              <h3 className="text-3xl font-bold mb-6 flex items-center gap-3">
+                <span className="text-4xl">👋</span>
+                I'm{" "}
+                <span className={darkMode ? "text-cyan-300" : "text-blue-600"}>
+                  Yash Sheorey
+                </span>
+              </h3>
+              <p
+                className={`text-lg leading-relaxed mb-6 ${
+                  darkMode ? "text-gray-300" : "text-slate-600"
+                }`}
+              >
+                A passionate developer obsessed with building
+                <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">
+                  {" "}
+                  futuristic digital experiences
+                </span>
+                . I bridge the gap between design and engineering, turning
+                complex problems into simple, beautiful, and performant
+                interfaces.
+              </p>
+              <p
+                className={`text-lg leading-relaxed mb-8 ${
+                  darkMode ? "text-gray-400" : "text-slate-500"
+                }`}
+              >
+                When I'm not coding, I'm exploring AI models, tinkering with
+                IoT, or contributing to open source.
+              </p>
+
+              <div className="flex flex-wrap gap-4">
+                <a
+                  href="/resume.pdf"
+                  download
+                  className={`group relative px-6 py-3 rounded-full font-bold overflow-hidden ${
+                    darkMode ? "bg-white text-black" : "bg-slate-900 text-white"
+                  }`}
+                >
+                  <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-cyan-300 via-purple-300 to-cyan-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <span className="relative flex items-center gap-2 z-10 group-hover:text-black transition-colors">
+                    <FaDownload /> Download Resume
+                  </span>
+                </a>
+              </div>
+            </SpotlightCard>
+          </motion.div>
+
+          {/* 2. STATS & AVATAR COLUMN (Span 5) */}
+          <div className="md:col-span-5 flex flex-col gap-6">
+            {/* Avatar / Hologram Box */}
+            <motion.div
+              className="flex-1 min-h-[250px]"
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              <SpotlightCard
+                className={`h-full rounded-3xl p-6 flex items-center justify-center relative overflow-hidden ${
+                  darkMode
+                    ? "bg-gradient-to-br from-purple-900/20 to-black"
+                    : "bg-gradient-to-br from-blue-50 to-white shadow-lg shadow-blue-100/50"
+                }`}
+              >
+                {/* Animated Rings */}
+                <div
+                  className={`absolute w-64 h-64 rounded-full border-2 animate-[spin_10s_linear_infinite] ${
+                    darkMode
+                      ? "border-cyan-500/20 border-t-cyan-500"
+                      : "border-blue-200 border-t-blue-500"
+                  }`}
+                />
+                <div
+                  className={`absolute w-48 h-48 rounded-full border-2 animate-[spin_15s_linear_infinite_reverse] ${
+                    darkMode
+                      ? "border-purple-500/20 border-t-purple-500"
+                      : "border-violet-200 border-t-violet-500"
+                  }`}
+                />
+
+                <div className="relative z-10 text-center">
+                  <FaBrain
+                    className={`text-6xl mx-auto mb-2 ${
+                      darkMode ? "text-cyan-300" : "text-blue-600"
+                    }`}
+                  />
+                  <div
+                    className={`font-mono text-xs ${
+                      darkMode ? "text-cyan-500" : "text-blue-400"
+                    }`}
+                  >
+                    SYSTEM.ONLINE
+                  </div>
+                  <div
+                    className={`font-bold text-xl mt-1 ${
+                      darkMode ? "text-white" : "text-slate-800"
+                    }`}
+                  >
+                    AI Enthusiast
+                  </div>
+                </div>
+              </SpotlightCard>
+            </motion.div>
+
+            {/* Stats Grid */}
+            <div className="grid grid-cols-3 gap-4">
+              {stats.map((stat, idx) => (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.2 + idx * 0.1 }}
+                  className={`rounded-2xl p-4 text-center border ${
+                    darkMode
+                      ? "bg-white/5 border-white/10"
+                      : "bg-white border-gray-200 shadow-sm"
+                  }`}
+                >
+                  <div
+                    className={`text-2xl md:text-3xl font-bold mb-1 bg-clip-text text-transparent bg-gradient-to-br from-cyan-400 to-purple-600`}
+                  >
+                    {stat.value}
+                  </div>
+                  <div
+                    className={`text-[10px] md:text-xs uppercase tracking-wide font-bold ${
+                      darkMode ? "text-gray-500" : "text-gray-400"
+                    }`}
+                  >
+                    {stat.label}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* --- EXPERTISE CARDS --- */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+          {features.map((f, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 50 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: index * 0.15 }}
+              transition={{ delay: i * 0.2 }}
             >
-              <div className="flex flex-col items-center">
-                <CustomIcon path={item.icon} color={item.color} />
-                <h4 className="mt-4 text-xl font-semibold mb-2 text-center">
-                  {item.title}
+              <SpotlightCard
+                className={`h-full rounded-3xl p-8 group relative overflow-hidden transition-transform hover:-translate-y-2 ${
+                  darkMode ? "bg-black/40" : "bg-white shadow-xl shadow-blue-50"
+                }`}
+                spotlightColor={
+                  darkMode
+                    ? "rgba(139, 92, 246, 0.15)"
+                    : "rgba(99, 102, 241, 0.15)"
+                }
+              >
+                <div
+                  className={`w-12 h-12 rounded-xl mb-6 flex items-center justify-center text-2xl bg-gradient-to-br ${f.color} text-white shadow-lg`}
+                >
+                  {f.icon}
+                </div>
+                <h4
+                  className={`text-xl font-bold mb-3 ${
+                    darkMode ? "text-white" : "text-slate-800"
+                  }`}
+                >
+                  {f.title}
                 </h4>
-                <p className="text-sm text-center">{item.description}</p>
-              </div>
+                <p
+                  className={`text-sm leading-relaxed ${
+                    darkMode ? "text-gray-400" : "text-slate-500"
+                  }`}
+                >
+                  {f.desc}
+                </p>
+              </SpotlightCard>
             </motion.div>
           ))}
         </div>
-      </motion.div>
+
+        {/* --- TECH TICKER --- */}
+        <div className="relative w-full">
+          <div className="text-center mb-6 opacity-50 font-mono text-sm uppercase tracking-widest">
+            Technologies I use
+          </div>
+          <Marquee darkMode={darkMode} />
+        </div>
+      </div>
     </section>
   );
 };
