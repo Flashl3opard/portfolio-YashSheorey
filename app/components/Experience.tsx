@@ -1,210 +1,357 @@
 "use client";
-import React from "react";
-import { motion } from "framer-motion";
-import { useTheme } from "./ThemeContext"; // ✅ Use theme context for dark/light support
 
-/* -------------------------------
-   Timeline Icon Component
-----------------------------------*/
-interface TimelineIconProps {
-  path: string;
-  color: "cyan" | "fuchsia" | "violet";
-}
+import React, { useRef } from "react";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useSpring,
+  useMotionValue,
+  useMotionTemplate,
+} from "framer-motion";
+import {
+  FaRocket,
+  FaCode,
+  FaLaptopCode,
+  FaLinux,
+  FaBriefcase,
+} from "react-icons/fa";
+import { useTheme } from "./ThemeContext";
 
-const TimelineIcon: React.FC<TimelineIconProps> = ({ path, color }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={2}
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={`w-7 h-7 text-${color}-400 drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]`}
-    aria-hidden="true"
-  >
-    <path d={path} />
-  </svg>
-);
-
-/* -------------------------------
-   Icon Paths
-----------------------------------*/
-const branchPath =
-  "M6 3v12M18 3v12M3 15a3 3 0 100 6 3 3 0 000-6zm12 0a3 3 0 100 6 3 3 0 000-6zm-6 0v6";
-const dotPath =
-  "M12 2a10 10 0 100 20 10 10 0 000-20zM12 12m-1 0a1 1 0 102 0 1 1 0 10-2 0";
-
-/* -------------------------------
-   Experience Data
-----------------------------------*/
-interface ExperienceItem {
-  role: string;
-  company: string;
-  period: string;
-  details: string;
-  iconPath: string;
-  color: "cyan" | "fuchsia" | "violet";
-}
-
-const experiences: ExperienceItem[] = [
+/* -----------------------------------------
+   Data
+--------------------------------------------*/
+const experiences = [
   {
-    role: "Freelance Full Stack Developer",
+    id: 1,
+    role: "Freelance Full Stack Dev",
     company: "Holiday Booking Platform",
     period: "2025 - Present",
-    details:
-      "Leading full-stack development with Next.js, Node.js, MongoDB, and Tailwind. Handling API design, deployment, and optimization for a seamless user experience.",
-    iconPath: branchPath,
+    desc: "Architecting a high-scale booking engine. Orchestrating Next.js microservices, optimizing MongoDB aggregation pipelines, and ensuring 99.9% uptime.",
+    icon: <FaLaptopCode />,
     color: "cyan",
   },
   {
-    role: "Founder & Developer",
-    company: "VibeXCode AI Dev Hub",
+    id: 2,
+    role: "Founder & Lead Dev",
+    company: "VibeXCode AI Hub",
     period: "2025",
-    details:
-      "Building AI-powered developer tools, real-time chat apps, and collaborative platforms using Appwrite, Firebase, and Next.js.",
-    iconPath: branchPath,
+    desc: "Bootstrapped an AI-native dev ecosystem. Built real-time collaboration engines with WebSockets and integrated LLMs for code generation.",
+    icon: <FaRocket />,
     color: "fuchsia",
   },
   {
-    role: "IoT & Robotics Developer",
-    company: "Autonomous Drone Competition",
+    id: 3,
+    role: "IoT Systems Engineer",
+    company: "Auto-Drone Comp",
     period: "2024",
-    details:
-      "Engineered autonomous navigation, manual mapping, and real-time controls for quadcopters. Led drone development using C++, embedded systems, and sensor integration.",
-    iconPath: dotPath,
+    desc: "Designed flight controller firmware in C++. Implemented PID stabilization algorithms and real-time telemetry data streaming over MQTT.",
+    icon: <FaCode />,
     color: "violet",
   },
   {
-    role: "Linux Kernel Contributor",
-    company: "Open Source Mentorship",
+    id: 4,
+    role: "Kernel Contributor",
+    company: "Open Source (Linux)",
     period: "2024",
-    details:
-      "Developed kernel modules, improved documentation, and optimized performance for RISC-V systems. Focused on kselftest enhancements and patch submission workflow.",
-    iconPath: branchPath,
-    color: "cyan",
+    desc: "Optimized RISC-V scheduler logic. Submitted patches for kselftest subsystem and improved kernel documentation for new contributors.",
+    icon: <FaLinux />,
+    color: "green",
   },
   {
-    role: "Frontend & Web Developer",
-    company: "Personal Projects & Freelance",
+    id: 5,
+    role: "Frontend Architect",
+    company: "Freelance & Projects",
     period: "2023 - 2025",
-    details:
-      "Crafted futuristic, responsive UIs using React, Next.js, and Tailwind CSS. Emphasized performance, animations, and user experience.",
-    iconPath: dotPath,
-    color: "fuchsia",
+    desc: "Crafting pixel-perfect, motion-rich interfaces. Specializing in WebGL integrations, Framer Motion physics, and accessible DOM structures.",
+    icon: <FaBriefcase />,
+    color: "blue",
   },
 ];
 
-/* -------------------------------
-   Main Experience Section
-----------------------------------*/
+/* -----------------------------------------
+   Color Maps
+--------------------------------------------*/
+const colors: Record<string, string> = {
+  cyan: "#06b6d4",
+  fuchsia: "#d946ef",
+  violet: "#8b5cf6",
+  green: "#22c55e",
+  blue: "#3b82f6",
+};
+
+/* -----------------------------------------
+   3D Tilt Card Component
+--------------------------------------------*/
+const ExperienceCard = ({
+  data,
+  index,
+  isLeft,
+}: {
+  data: (typeof experiences)[0];
+  index: number;
+  isLeft: boolean;
+}) => {
+  const { darkMode } = useTheme();
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  // Mouse Physics
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const rotateX = useSpring(useMotionValue(0), { stiffness: 150, damping: 20 });
+  const rotateY = useSpring(useMotionValue(0), { stiffness: 150, damping: 20 });
+
+  function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
+    const rect = cardRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const width = rect.width;
+    const height = rect.height;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    const rX = (mouseY / height - 0.5) * -15;
+    const rY = (mouseX / width - 0.5) * 15;
+
+    rotateX.set(rX);
+    rotateY.set(rY);
+    x.set(mouseX);
+    y.set(mouseY);
+  }
+
+  function handleMouseLeave() {
+    rotateX.set(0);
+    rotateY.set(0);
+    x.set(0);
+    y.set(0);
+  }
+
+  const accentColor = colors[data.color];
+
+  return (
+    <div
+      className={`relative w-full md:w-[45%] mb-12 md:mb-0 ${
+        isLeft ? "md:mr-auto md:text-right" : "md:ml-auto md:text-left"
+      }`}
+    >
+      {/* --- CONNECTION BEAM (Desktop) --- */}
+      <div
+        className={`hidden md:block absolute top-10 h-[2px] w-[10%] bg-gradient-to-r from-transparent via-${
+          data.color
+        }-500 to-transparent z-0 ${isLeft ? "-right-[10%]" : "-left-[10%]"}`}
+      >
+        <div
+          className={`absolute top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-${
+            data.color
+          }-400 shadow-[0_0_10px_currentColor] ${
+            isLeft ? "right-0" : "left-0"
+          }`}
+        />
+      </div>
+
+      {/* --- CARD --- */}
+      <motion.div
+        ref={cardRef}
+        initial={{ opacity: 0, x: isLeft ? -50 : 50 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.6, delay: index * 0.1 }}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        style={{
+          rotateX,
+          rotateY,
+          transformStyle: "preserve-3d",
+        }}
+        className="relative perspective-1000"
+      >
+        <div
+          className={`relative rounded-2xl p-[1px] overflow-hidden transition-all duration-500 group ${
+            darkMode ? "bg-gray-900" : "bg-white"
+          }`}
+        >
+          {/* Neon Border Gradient */}
+          <div
+            className={`absolute inset-0 opacity-30 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r ${
+              isLeft
+                ? "from-transparent to-" + data.color + "-500"
+                : "from-" + data.color + "-500 to-transparent"
+            }`}
+          />
+
+          {/* Inner Content */}
+          <div
+            className={`relative rounded-2xl p-6 md:p-8 h-full backdrop-blur-xl border transition-colors ${
+              darkMode
+                ? "bg-[#0a0a12]/90 border-white/5"
+                : "bg-white/90 border-gray-200 shadow-xl"
+            }`}
+          >
+            {/* Spotlight */}
+            <motion.div
+              style={{
+                background: useMotionTemplate`
+                        radial-gradient(
+                            400px circle at ${x}px ${y}px,
+                            ${accentColor}15,
+                            transparent 80%
+                        )
+                        `,
+              }}
+              className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+            />
+
+            {/* Header */}
+            <div
+              className={`flex flex-col gap-2 mb-4 ${
+                isLeft ? "md:items-end" : "md:items-start"
+              }`}
+            >
+              <span
+                className={`inline-flex items-center justify-center w-12 h-12 rounded-xl text-2xl mb-2 shadow-lg ${
+                  darkMode
+                    ? `bg-white/5 text-${data.color}-400`
+                    : `bg-${data.color}-50 text-${data.color}-600`
+                }`}
+              >
+                {data.icon}
+              </span>
+              <h3
+                className={`text-2xl font-bold ${
+                  darkMode ? "text-white" : "text-slate-800"
+                }`}
+              >
+                {data.role}
+              </h3>
+              <p
+                className={`text-sm font-mono uppercase tracking-widest ${
+                  darkMode ? `text-${data.color}-400` : `text-${data.color}-600`
+                }`}
+              >
+                {data.company}
+              </p>
+            </div>
+
+            {/* Details */}
+            <p
+              className={`text-sm leading-relaxed mb-4 ${
+                darkMode ? "text-gray-400" : "text-slate-600"
+              }`}
+            >
+              {data.desc}
+            </p>
+
+            {/* Period Badge */}
+            <span
+              className={`inline-block px-3 py-1 text-xs font-bold rounded-full border ${
+                darkMode
+                  ? `border-${data.color}-500/30 bg-${data.color}-500/10 text-${data.color}-300`
+                  : `border-${data.color}-200 bg-${data.color}-50 text-${data.color}-700`
+              }`}
+            >
+              {data.period}
+            </span>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+/* -----------------------------------------
+   Main Component
+--------------------------------------------*/
 const Experience: React.FC = () => {
-  const { darkMode } = useTheme(); // ✅ Global theme
+  const { darkMode } = useTheme();
+  const containerRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"],
+  });
+
+  const scaleY = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001,
+  });
 
   return (
     <section
       id="experience"
-      className={`relative w-full py-24 md:py-32 flex flex-col items-center px-4 md:px-6 z-10 transition-all duration-700 ${
-        darkMode
-          ? "bg-gradient-to-br from-[#050510] via-[#0b0f25] to-[#09172e] text-white"
-          : "bg-gradient-to-br from-[#f5f5ff] via-[#e8f0ff] to-[#dfe9ff] text-gray-900"
+      ref={containerRef}
+      className={`relative w-full py-24 md:py-32 overflow-hidden transition-colors duration-700 ${
+        darkMode ? "bg-[#050510]" : "bg-gray-50"
       }`}
     >
-      {/* === Section Header === */}
-      <motion.h2
-        className="text-4xl md:text-6xl font-extrabold text-center mb-16 bg-gradient-to-r from-cyan-400 via-fuchsia-500 to-violet-500 bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(0,255,255,0.3)]"
-        initial={{ opacity: 0, y: 50 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.5 }}
-        transition={{ duration: 0.6 }}
-      >
-        My Journey
-      </motion.h2>
+      {/* --- BACKGROUND GRID --- */}
+      <div
+        className={`absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.05)_1px,transparent_1px)] bg-[size:100px_100px] ${
+          darkMode ? "opacity-10" : "opacity-20"
+        }`}
+      />
 
-      <div className="max-w-5xl mx-auto relative">
-        {/* === Vertical Timeline Line === */}
-        <div
-          className={`absolute left-3 md:left-1/2 transform md:-translate-x-1/2 w-1 h-full ${
-            darkMode
-              ? "bg-gradient-to-b from-cyan-400/50 via-fuchsia-400/50 to-violet-400/50"
-              : "bg-gradient-to-b from-cyan-300/60 via-fuchsia-300/60 to-violet-300/60"
-          } shadow-[0_0_15px_rgba(0,255,255,0.4)]`}
-          aria-hidden="true"
-        />
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        {/* Header */}
+        <div className="text-center mb-24">
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            className="text-4xl md:text-6xl font-black uppercase tracking-tighter"
+          >
+            <span className={darkMode ? "text-white" : "text-slate-900"}>
+              Career
+            </span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-600">
+              Timeline
+            </span>
+          </motion.h2>
+          <div
+            className={`h-1 w-24 mx-auto mt-4 rounded-full bg-gradient-to-r from-cyan-500 to-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.5)]`}
+          />
+        </div>
 
-        {/* === Experience Cards === */}
-        {experiences.map((exp, i) => {
-          const isLeft = i % 2 === 0;
-
-          return (
+        {/* Timeline Container */}
+        <div className="relative">
+          {/* --- CENTRAL BEAM --- */}
+          <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-[2px] md:-translate-x-1/2 h-full bg-gray-200/20 z-0">
             <motion.div
-              key={i}
-              className={`mb-14 flex w-full ${
-                isLeft ? "justify-start" : "justify-end"
-              }`}
-              initial={{ opacity: 0, x: isLeft ? -100 : 100 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ delay: i * 0.2, duration: 0.7 }}
-            >
-              {/* Timeline Node (Desktop Only) */}
-              <div
-                className={`absolute hidden md:flex top-6 left-1/2 transform -translate-x-1/2 z-10 items-center justify-center p-3 rounded-full border-4 ${
-                  darkMode
-                    ? "border-gray-800 bg-white/10"
-                    : "border-white bg-gray-100/40"
-                } backdrop-blur-sm shadow-xl shadow-${exp.color}-400/40`}
-              >
-                <TimelineIcon path={exp.iconPath} color={exp.color} />
-              </div>
+              style={{ scaleY, transformOrigin: "top" }}
+              className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-cyan-500 via-purple-500 to-blue-500 shadow-[0_0_15px_rgba(168,85,247,0.6)]"
+            />
+          </div>
 
-              {/* === Experience Card === */}
-              <div
-                className={`relative w-full md:w-5/12 p-6 rounded-2xl border border-${
-                  exp.color
-                }-400/30 ${
-                  darkMode
-                    ? `bg-white/5 text-gray-200 shadow-${exp.color}-400/20`
-                    : `bg-white/60 text-gray-800 shadow-${exp.color}-300/30`
-                } backdrop-blur-md shadow-lg transition-all duration-500 hover:shadow-2xl hover:shadow-${
-                  exp.color
-                }-400/40 ${isLeft ? "md:mr-auto" : "md:ml-auto"}`}
-              >
-                {/* Mobile Icon */}
-                <div className="block md:hidden absolute -left-6 top-6">
-                  <TimelineIcon path={exp.iconPath} color={exp.color} />
+          {/* Experience Nodes */}
+          <div className="flex flex-col gap-12 md:gap-0">
+            {experiences.map((exp, i) => {
+              const isLeft = i % 2 === 0;
+              return (
+                <div
+                  key={exp.id}
+                  className="relative flex md:block items-center"
+                >
+                  {/* Center Node (Reactor) */}
+                  <div className="absolute left-[16px] md:left-1/2 transform -translate-x-1/2 z-20">
+                    <div
+                      className={`w-4 h-4 rounded-full border-2 ${
+                        darkMode
+                          ? "bg-[#050510] border-cyan-500"
+                          : "bg-white border-blue-500"
+                      } shadow-[0_0_10px_currentColor] z-20 relative`}
+                    >
+                      <div
+                        className={`absolute inset-0 rounded-full bg-${exp.color}-500 animate-ping opacity-30`}
+                      />
+                    </div>
+                  </div>
+
+                  {/* The Card */}
+                  <div className="pl-12 md:pl-0 w-full">
+                    <ExperienceCard data={exp} index={i} isLeft={isLeft} />
+                  </div>
                 </div>
-
-                <h3
-                  className={`text-xl md:text-2xl font-bold text-${exp.color}-400`}
-                >
-                  {exp.role}
-                </h3>
-                <p
-                  className={`font-medium mb-1 ${
-                    darkMode ? "text-gray-300" : "text-gray-700"
-                  }`}
-                >
-                  {exp.company}
-                </p>
-                <p
-                  className={`text-sm mb-3 ${
-                    darkMode ? "text-gray-400" : "text-gray-600"
-                  }`}
-                >
-                  {exp.period}
-                </p>
-                <p
-                  className={`text-base ${
-                    darkMode ? "text-gray-400" : "text-gray-700"
-                  }`}
-                >
-                  {exp.details}
-                </p>
-              </div>
-            </motion.div>
-          );
-        })}
+              );
+            })}
+          </div>
+        </div>
       </div>
     </section>
   );
