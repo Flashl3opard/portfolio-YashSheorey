@@ -19,9 +19,37 @@ import {
 import { useTheme } from "./ThemeContext";
 
 /* -----------------------------------------
-   Data
+    Data
 --------------------------------------------*/
 const experiences = [
+  {
+    id: 4,
+    role: "LFX 2025",
+    company: "The Linux Kernel",
+    period: "2025",
+    desc: "Contributed to the Linux Kernel through the LFX Mentorship program by improving kselftest test cases, fixing documentation issues, and enhancing clarity and consistency across contributor-facing docs.",
+    icon: <FaLinux />,
+    color: "green",
+  },
+  {
+    // New entry based on user request
+    id: 6,
+    role: "Dev Team Leader",
+    company: "Tarang'25 Project",
+    period: "2025",
+    desc: "Led the Web Development team for Tarang’25, the largest cultural fest in Central India, architecting a fast, scalable event website with modern frameworks and high user traffic optimization.",
+    icon: <FaBriefcase />,
+    color: "violet", // Using violet as a new distinct color
+  },
+  {
+    id: 3,
+    role: "IoT and Autonomous Drone Engineer",
+    company: "Auto-Drone Comp",
+    period: "2024",
+    desc: "Designed and engineered an autonomous quadcopter system for a national-level drone competition, implementing manual mapping workflows, navigation logic, and real-time sensor integration for stable flight performance.",
+    icon: <FaCode />,
+    color: "violet", // Reusing violet, though it might be good to change for timeline clarity
+  },
   {
     id: 1,
     role: "Freelance Full Stack Dev",
@@ -41,24 +69,6 @@ const experiences = [
     color: "fuchsia",
   },
   {
-    id: 3,
-    role: "IoT Systems Engineer",
-    company: "Auto-Drone Comp",
-    period: "2024",
-    desc: "Designed flight controller firmware in C++. Implemented PID stabilization algorithms and real-time telemetry data streaming over MQTT.",
-    icon: <FaCode />,
-    color: "violet",
-  },
-  {
-    id: 4,
-    role: "Kernel Contributor",
-    company: "Open Source (Linux)",
-    period: "2024",
-    desc: "Optimized RISC-V scheduler logic. Submitted patches for kselftest subsystem and improved kernel documentation for new contributors.",
-    icon: <FaLinux />,
-    color: "green",
-  },
-  {
     id: 5,
     role: "Frontend Architect",
     company: "Freelance & Projects",
@@ -70,7 +80,7 @@ const experiences = [
 ];
 
 /* -----------------------------------------
-   Color Maps
+    Color Maps
 --------------------------------------------*/
 const colors: Record<string, string> = {
   cyan: "#06b6d4",
@@ -81,7 +91,7 @@ const colors: Record<string, string> = {
 };
 
 /* -----------------------------------------
-   3D Tilt Card Component
+    3D Tilt Card Component
 --------------------------------------------*/
 const ExperienceCard = ({
   data,
@@ -137,7 +147,7 @@ const ExperienceCard = ({
       <div
         className={`hidden md:block absolute top-10 h-[2px] w-[10%] bg-gradient-to-r from-transparent via-${
           data.color
-        }-500 to-transparent z-0 ${isLeft ? "-right-[10%]" : "-left-[10%]"}`}
+        }-500 to-transparent z-0 ${isLeft ? "-right-[10%]" : "-left-[10%"}`}
       >
         <div
           className={`absolute top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-${
@@ -190,12 +200,12 @@ const ExperienceCard = ({
             <motion.div
               style={{
                 background: useMotionTemplate`
-                        radial-gradient(
-                            400px circle at ${x}px ${y}px,
-                            ${accentColor}15,
-                            transparent 80%
-                        )
-                        `,
+						radial-gradient(
+							400px circle at ${x}px ${y}px,
+							${accentColor}15,
+							transparent 80%
+						)
+						`,
               }}
               className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
             />
@@ -217,14 +227,16 @@ const ExperienceCard = ({
               </span>
               <h3
                 className={`text-2xl font-bold ${
-                  darkMode ? "text-white" : "text-slate-800"
+                  // FIX 1: Role Title - text-black in light mode
+                  darkMode ? "text-white" : "text-black"
                 }`}
               >
                 {data.role}
               </h3>
               <p
                 className={`text-sm font-mono uppercase tracking-widest ${
-                  darkMode ? `text-${data.color}-400` : `text-${data.color}-600`
+                  // FIX 2: Company - Use a slightly darker shade in light mode
+                  darkMode ? `text-${data.color}-400` : `text-${data.color}-700`
                 }`}
               >
                 {data.company}
@@ -234,7 +246,8 @@ const ExperienceCard = ({
             {/* Details */}
             <p
               className={`text-sm leading-relaxed mb-4 ${
-                darkMode ? "text-gray-400" : "text-slate-600"
+                // FIX 3: Description - Use a darker gray for description in light mode
+                darkMode ? "text-gray-400" : "text-gray-800"
               }`}
             >
               {data.desc}
@@ -245,7 +258,8 @@ const ExperienceCard = ({
               className={`inline-block px-3 py-1 text-xs font-bold rounded-full border ${
                 darkMode
                   ? `border-${data.color}-500/30 bg-${data.color}-500/10 text-${data.color}-300`
-                  : `border-${data.color}-200 bg-${data.color}-50 text-${data.color}-700`
+                  : // FIX 4: Period Text - Force text to black in light mode to guarantee visibility, as dynamic colors can fail
+                    `border-${data.color}-200 bg-${data.color}-50 text-black`
               }`}
             >
               {data.period}
@@ -258,7 +272,7 @@ const ExperienceCard = ({
 };
 
 /* -----------------------------------------
-   Main Component
+    Main Component
 --------------------------------------------*/
 const Experience: React.FC = () => {
   const { darkMode } = useTheme();

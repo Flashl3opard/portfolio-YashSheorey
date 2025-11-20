@@ -269,7 +269,7 @@ const About: React.FC = () => {
               {/* Resume Button */}
               <div className="flex flex-wrap gap-4">
                 <a
-                  href="/resume.pdf"
+                  href="https://drive.google.com/file/d/1u7CapWNxL3w4j3DkkszuqzGfMg9WQDZc/view?usp=drive_link"
                   download
                   className={`group relative px-6 py-3 rounded-full font-bold overflow-hidden ${
                     darkMode ? "bg-white text-black" : "bg-slate-900 text-white"
