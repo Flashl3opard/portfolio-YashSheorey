@@ -10,6 +10,7 @@ import Skills from "./components/Skills";
 import Projects from "./components/Projects";
 import Experience from "./components/Experience";
 import Contact from "./components/Contact";
+import Certificates from "./components/Certificates";
 
 export default function Home() {
   // ✨ Loader state
@@ -88,6 +89,7 @@ export default function Home() {
             <Experience />
 
             {/* ===== CONTACT ===== */}
+            <Certificates />
             <Contact />
 
             {/* ===== FOOTER ===== */}

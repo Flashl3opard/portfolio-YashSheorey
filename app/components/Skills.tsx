@@ -16,6 +16,7 @@ import {
   FaPython,
   FaJs,
   FaGitAlt,
+  FaCode, // <-- Ensuring FaCode is available for Copilot
 } from "react-icons/fa";
 
 import {
@@ -25,12 +26,15 @@ import {
   SiGo,
   SiExpress,
   SiTypescript,
+  SiPostgresql,
 } from "react-icons/si";
+
+import { IoLogoFirebase } from "react-icons/io5";
 
 import { useTheme } from "./ThemeContext";
 
 /* -----------------------------------------
-   Data
+    Data
 --------------------------------------------*/
 
 const techSections = [
@@ -42,6 +46,7 @@ const techSections = [
       { name: "TypeScript", icon: <SiTypescript className="text-blue-400" /> },
       { name: "Python", icon: <FaPython className="text-blue-500" /> },
       { name: "GoLang", icon: <SiGo className="text-cyan-400" /> },
+      { name: "PostgreSQL", icon: <SiPostgresql className="text-blue-600" /> },
     ],
   },
   {
@@ -61,13 +66,18 @@ const techSections = [
     skills: [
       { name: "MongoDB", icon: <FaDatabase className="text-emerald-400" /> },
       { name: "Appwrite", icon: <SiAppwrite className="text-pink-500" /> },
+      {
+        name: "Firebase",
+        icon: <IoLogoFirebase className="text-yellow-600" />,
+      },
+      { name: "Copilot", icon: <FaCode className="text-purple-500" /> }, // <-- ADDED COPILOT
       { name: "Git", icon: <FaGitAlt className="text-orange-600" /> },
     ],
   },
 ];
 
 /* -----------------------------------------
-   MOBILE SAFE 3D CARD
+    MOBILE SAFE 3D CARD
 --------------------------------------------*/
 
 const TechCard = ({
@@ -156,7 +166,7 @@ const TechCard = ({
 };
 
 /* -----------------------------------------
-   Skills Section (Mobile Optimized)
+    Skills Section (Mobile Optimized)
 --------------------------------------------*/
 
 const Skills = () => {
